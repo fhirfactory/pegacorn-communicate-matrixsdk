@@ -105,6 +105,16 @@
         </dependency>
 
         <!--*******************************************************************************-->
+        <!-- Apache HTTP Components (non-Camel) Libraries                                  -->
+        <!--*******************************************************************************-->
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${version-org.apache.httpcomponents-httpclient}</version>
+        </dependency>
+
+        <!--*******************************************************************************-->
         <!-- Apache Camel Core Libraries                                                   -->
         <!--*******************************************************************************-->
 
@@ -173,6 +183,16 @@
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-validation-resources-r4</artifactId>
             <version>${version-ca.uhn.hapi.fhir}</version>
+        </dependency>
+
+        <!--*******************************************************************************-->
+        <!-- HAPI FHIR Narrative (Thymeleaf) Libraries                                     -->
+        <!--*******************************************************************************-->
+
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <version>${version-org.thymeleaf}</version>
         </dependency>
 
         <!--*******************************************************************************-->

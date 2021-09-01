@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.fhirfactory.pegacorn.internals.matrix.r061.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.internals.synapse.api.SynapseRoom;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;

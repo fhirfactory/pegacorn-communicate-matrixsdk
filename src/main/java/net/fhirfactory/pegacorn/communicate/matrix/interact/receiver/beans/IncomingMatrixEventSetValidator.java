@@ -1,4 +1,4 @@
-package net.fhirfactory.pegacorn.communicate.matrix.receiver.beans;
+package net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.fhirfactory.pegacorn.communicate.matrix.receiver.beans;
+package net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans;
 
 /**
  *

@@ -24,7 +24,7 @@ package net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class MatrixEvent {
-    String matrixEventFineGrainType;
+    private String matrixEventFineGrainType;
 
     @JsonIgnore
     public String getMatrixEventFineGrainType() {

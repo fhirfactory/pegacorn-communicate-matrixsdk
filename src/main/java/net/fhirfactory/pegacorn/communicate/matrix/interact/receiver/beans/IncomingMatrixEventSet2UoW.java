@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.fhirfactory.pegacorn.communicate.matrix.receiver.beans;
+package net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.constants.MatrixClientServiceAPIConstants;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;

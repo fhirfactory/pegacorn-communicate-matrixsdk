@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 mhunter
+ * Copyright (c) 2020 Mark A. Hunter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,12 @@
  * SOFTWARE.
  */
 
-package net.fhirfactory.pegacorn.communicate.matrix.receiver;
+package net.fhirfactory.pegacorn.communicate.matrix.interact.receiver;
 
+import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixEventSet2UoW;
+import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixMessageSplitter;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixEventNotFoundException;
-import net.fhirfactory.pegacorn.communicate.matrix.receiver.beans.IncomingMatrixEventSet2UoW;
-import net.fhirfactory.pegacorn.communicate.matrix.receiver.beans.IncomingMatrixEventSetValidator;
+import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixEventSetValidator;
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCServerTopologyEndpoint;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPProcessingPlantTopologyEndpointPort;
@@ -75,11 +76,10 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
         fromInteractIngresService(ingresFeed())
                 .routeId(getNameSet().getRouteCoreWUP())
                 .transform(simple("${bodyAs(String)}"))
-                .log(LoggingLevel.TRACE, ": Message received!!!")
                 .bean(IncomingMatrixEventSetValidator.class, "validateEventSetMessage")
                 .bean(IncomingMatrixEventSet2UoW.class, "encapsulateMatrixMessage(*, Exchange)")
                 .bean(IngresActivityBeginRegistration.class, "registerActivityStart(*,  Exchange)")
-                .log(LoggingLevel.TRACE, "Message Validated, Forwarding!!!")
+                .bean(IncomingMatrixMessageSplitter.class, "splitMessageIntoEvents")
                 .to(egressFeed());
     }
 
@@ -186,7 +186,7 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
 
     @Override
     protected String specifyIngresTopologyEndpointName() {
-        return null;
+        return ("events-in");
     }
 
     @Override

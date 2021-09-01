@@ -21,9 +21,9 @@
  */
 package net.fhirfactory.pegacorn.communicate.matrix.actions.simpleactions.matrixserver;
 
-import net.fhirfactory.pegacorn.internals.matrix.r061.api.common.MAPIResponse;
-import net.fhirfactory.pegacorn.internals.matrix.r061.api.rooms.MRoomCreation;
-import net.fhirfactory.pegacorn.internals.matrix.r061.api.rooms.MRoomVisibilityEnum;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.rooms.MRoomCreation;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.rooms.MRoomVisibilityEnum;
 
 import javax.enterprise.context.ApplicationScoped;
 
