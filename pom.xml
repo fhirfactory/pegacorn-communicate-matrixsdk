@@ -241,14 +241,6 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-deployment-model</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
         <!--*******************************************************************************-->
         <!-- Pegacorn (Petasos) Libraries                                                  -->
         <!--*******************************************************************************-->
@@ -377,7 +369,7 @@
         <!--*******************************************************************************-->
         <!-- Pegacorn (BuildingBlock) Data Models                                          -->
         <!--*******************************************************************************-->
-
+        <!--
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
             <artifactId>pegacorn-buildingblocks-datamodels-synapse</artifactId>
@@ -393,11 +385,11 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-
+        -->
         <!--*******************************************************************************-->
         <!-- Pegacorn (BuildingBlock) Directory Microservices                              -->
         <!--*******************************************************************************-->
-
+        <!--
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
             <artifactId>pegacorn-buildingblocks-directoryservices</artifactId>
@@ -405,7 +397,7 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-
+        -->
         <!--*******************************************************************************-->
         <!-- JGroups Manipulation Libraries                                                -->
         <!--*******************************************************************************-->

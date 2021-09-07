@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.communicate.matrix.interact.query;
+package net.fhirfactory.pegacorn.communicate.synapse.interact;
 
 import net.fhirfactory.pegacorn.components.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
@@ -39,20 +39,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
 
-@ApplicationScoped
-public class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayWUP implements CapabilityFulfillmentInterface {
-    private static final Logger LOG = LoggerFactory.getLogger(SynapseAPIProxyWUP.class);
+public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayWUP implements CapabilityFulfillmentInterface {
 
-    private static String WUP_VERSION="1.0.0";
     private static String CAMEL_COMPONENT_TYPE = "netty-http";
 
     @Inject
     private InteractWorkshop workshop;
-
-    @Override
-    protected Logger specifyLogger() {
-        return (LOG);
-    }
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
@@ -60,24 +52,10 @@ public class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayWUP implem
     }
 
     @Override
-    protected String specifyWUPInstanceName() {
-        return (getClass().getSimpleName());
-    }
-
-    @Override
-    protected String specifyWUPInstanceVersion() {
-        return (WUP_VERSION);
-    }
-
-    @Override
     protected WorkshopInterface specifyWorkshop() {
         return (workshop);
     }
 
-    @Override
-    protected String specifyEgressTopologyEndpointName() {
-        return ("synapse-api");
-    }
 
     @Override
     protected MessageBasedWUPEndpoint specifyEgressEndpoint() {

@@ -39,39 +39,16 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
 
-@ApplicationScoped
-public class MatrixClientServerEventForwarderWUP extends InteractEgressMessagingGatewayWUP implements CapabilityFulfillmentInterface {
-    private static final Logger LOG = LoggerFactory.getLogger(MatrixClientServerEventForwarderWUP.class);
+public abstract class MatrixClientServerEventForwarderWUP extends InteractEgressMessagingGatewayWUP implements CapabilityFulfillmentInterface {
 
-    private static String WUP_VERSION="1.0.0";
     private String CAMEL_COMPONENT_TYPE="netty-http";
 
     @Inject
     private InteractWorkshop workshop;
 
     @Override
-    protected String specifyEgressTopologyEndpointName() {
-        return ("msg-out");
-    }
-
-    @Override
-    protected Logger specifyLogger() {
-        return (LOG);
-    }
-
-    @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
         return null;
-    }
-
-    @Override
-    protected String specifyWUPInstanceName() {
-        return (getClass().getSimpleName());
-    }
-
-    @Override
-    protected String specifyWUPInstanceVersion() {
-        return (WUP_VERSION);
     }
 
     @Override

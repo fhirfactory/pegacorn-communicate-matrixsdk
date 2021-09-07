@@ -33,7 +33,7 @@ public class IncomingMatrixMessageSplitter {
     private static final Logger LOG = LoggerFactory.getLogger(IncomingMatrixMessageSplitter.class);
 
     public UoW splitMessageIntoEvents(UoW incomingUoW) {
-        LOG.debug("splitMessageIntoEvents(): Entry: Message to split -->" + incomingUoW);
+        LOG.info("splitMessageIntoEvents(): Entry: Message to split -->" + incomingUoW);
         if (incomingUoW.getIngresContent().getPayload().isEmpty()) {
             LOG.debug("splitMessageIntoEvents(): Exit: Empty message");
             return (incomingUoW);
@@ -50,7 +50,7 @@ public class IncomingMatrixMessageSplitter {
                 MEventTypeEnum parcelType = MEventTypeEnum.fromString(messageType);
                 DataParcelTypeDescriptor eventDescriptor = null;
                 if(parcelType.equals(MEventTypeEnum.M_ROOM_MESSAGE)){
-                    eventDescriptor = resolveInstantMessageType(localMessageObject);
+                    eventDescriptor = resolveInstantMessageType(eventInstance);
                 }
                 if(eventDescriptor == null){
                     eventDescriptor = parcelType.getTypeDescriptor();
@@ -72,7 +72,7 @@ public class IncomingMatrixMessageSplitter {
             }            
         }
         incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
-        LOG.debug("splitMessageIntoEvents(): Exit: incomingUoW has been updated --> {}", incomingUoW);
+        LOG.info("splitMessageIntoEvents(): Exit: incomingUoW has been updated --> {}", incomingUoW);
         return (incomingUoW);
     }
 

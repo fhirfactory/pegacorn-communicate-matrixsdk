@@ -22,9 +22,69 @@
 package net.fhirfactory.pegacorn.communicate.matrix.actions.common;
 
 
-import net.fhirfactory.pegacorn.internals.communicate.activity.CommunicateActivityOutcome;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.common.contenttypes.MEventTypeEnum;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.room.message.contenttypes.MRoomMessageTypeEnum;
 
-public class MatrixActionOutcome extends CommunicateActivityOutcome {
+import java.util.Objects;
 
+public class MatrixActionOutcome  {
+    private MatrixActivityOutcomeStatusEnum outcomeStatus;
+    private MEventTypeEnum activityFocus;
+    private MRoomMessageTypeEnum activitySubFocus;
+    private String actionID;
 
+    public MatrixActivityOutcomeStatusEnum getOutcomeStatus() {
+        return outcomeStatus;
+    }
+
+    public void setOutcomeStatus(MatrixActivityOutcomeStatusEnum outcomeStatus) {
+        this.outcomeStatus = outcomeStatus;
+    }
+
+    public MEventTypeEnum getActivityFocus() {
+        return activityFocus;
+    }
+
+    public void setActivityFocus(MEventTypeEnum activityFocus) {
+        this.activityFocus = activityFocus;
+    }
+
+    public MRoomMessageTypeEnum getActivitySubFocus() {
+        return activitySubFocus;
+    }
+
+    public void setActivitySubFocus(MRoomMessageTypeEnum activitySubFocus) {
+        this.activitySubFocus = activitySubFocus;
+    }
+
+    public String getActionID() {
+        return actionID;
+    }
+
+    public void setActionID(String actionID) {
+        this.actionID = actionID;
+    }
+
+    @Override
+    public String toString() {
+        return "MatrixActionOutcome{" +
+                "outcomeStatus=" + outcomeStatus +
+                ", activityFocus=" + activityFocus +
+                ", activitySubFocus=" + activitySubFocus +
+                ", actionID='" + actionID + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MatrixActionOutcome)) return false;
+        MatrixActionOutcome that = (MatrixActionOutcome) o;
+        return getOutcomeStatus() == that.getOutcomeStatus() && getActivityFocus() == that.getActivityFocus() && getActivitySubFocus() == that.getActivitySubFocus() && Objects.equals(getActionID(), that.getActionID());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getOutcomeStatus(), getActivityFocus(), getActivitySubFocus(), getActionID());
+    }
 }

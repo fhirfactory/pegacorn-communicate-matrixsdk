@@ -23,30 +23,26 @@
 package net.fhirfactory.pegacorn.communicate.matrix.interact.receiver;
 
 import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixEventSet2UoW;
+import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixEventSetValidator;
 import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixMessageSplitter;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixEventNotFoundException;
-import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixEventSetValidator;
+import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixUpdateException;
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCServerTopologyEndpoint;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPProcessingPlantTopologyEndpointPort;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
-import net.fhirfactory.pegacorn.internals.esr.transactions.exceptions.ResourceUpdateException;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractIngresMessagingGatewayWUP;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-@ApplicationScoped
-public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMessagingGatewayWUP {
-    private static final Logger LOG = LoggerFactory.getLogger(MatrixApplicationServicesEventsReceiverWUP.class);
+public abstract class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMessagingGatewayWUP {
 
     private static String INGRES_GATEWAY_COMPONENT = "netty-http";
 
@@ -59,7 +55,7 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
    
     @Override
     public void configure() throws Exception {
-        LOG.debug(".configure(): Entry");
+        getLogger().debug(".configure(): Entry");
 
         getLogger().info("{}:: ingresFeed() --> {}", getClass().getSimpleName(), ingresFeed());
         getLogger().info("{}:: egressFeed() --> {}", getClass().getSimpleName(), egressFeed());
@@ -79,25 +75,18 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
                 .bean(IncomingMatrixEventSetValidator.class, "validateEventSetMessage")
                 .bean(IncomingMatrixEventSet2UoW.class, "encapsulateMatrixMessage(*, Exchange)")
                 .bean(IngresActivityBeginRegistration.class, "registerActivityStart(*,  Exchange)")
+                .to(ExchangePattern.InOnly, getContinueProcessingRoute())
+                .transform().simple("{}")
+                .end();
+
+        fromWithStandardExceptionHandling(getContinueProcessingRoute())
                 .bean(IncomingMatrixMessageSplitter.class, "splitMessageIntoEvents")
                 .to(egressFeed());
     }
 
-
-
-    @Override
-    public String specifyWUPInstanceName() {
-        return("MatrixApplicationServicesEventsReceiverWUP");
-    }
-
-    @Override
-    public String specifyWUPInstanceVersion() {
-        return("0.0.1");
-    }
-
-    @Override
-    protected Logger specifyLogger() {
-        return (LOG);
+    private String getContinueProcessingRoute(){
+        String routeName = "direct:" + getClass().getSimpleName() + "-ContinueProcessingRoute";
+        return(routeName);
     }
 
     @Override
@@ -107,49 +96,37 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
 
     @Override
     protected MessageBasedWUPEndpoint specifyIngresEndpoint() {
-        LOG.debug(".specifyIngresTopologyEndpoint(): Entry");
+        getLogger().debug(".specifyIngresTopologyEndpoint(): Entry");
         MessageBasedWUPEndpoint ingresEndpoint = new MessageBasedWUPEndpoint();
         ingresEndpoint.setFrameworkEnabled(false);
-        IPCServerTopologyEndpoint endpoint = (HTTPServerClusterServiceTopologyEndpointPort) getTopologyEndpoint(specifyIngresTopologyEndpointName());
-        if(endpoint == null){
-            LOG.error(".specifyIngresTopologyEndpoint(): Unable to derive endpoint for Matrix Application Services API  Server");
-            return(ingresEndpoint);
+        IPCServerTopologyEndpoint genericEndpoint = (IPCServerTopologyEndpoint)getTopologyEndpoint(specifyIngresTopologyEndpointName());
+        if (genericEndpoint == null) {
+            getLogger().error(".specifyIngresTopologyEndpoint(): Unable to derive endpoint for Matrix Application Services API  Server");
+            return (ingresEndpoint);
         }
-        LOG.trace(".specifyIngresTopologyEndpoint(): Resolved endpoint->{}", endpoint);
-        int portValue = endpoint.getPortValue();
-        String interfaceDNSName = endpoint.getHostDNSName();
-        String ingresString = buildIngresString(interfaceDNSName, Integer.toString(portValue), getServerPath());
+        // Assign the Associated TopologyNode to the Ingres Endpoint
+        ingresEndpoint.setEndpointTopologyNode(genericEndpoint);
+        getLogger().trace(".specifyIngresTopologyEndpoint(): Resolved genericEndpoint->{}", genericEndpoint);
+        // Building the Endpoint Specification (String)
+        int portValue = genericEndpoint.getPortValue();
+        String interfaceDNSName = genericEndpoint.getHostDNSName();
+        String serverPath = null;
+        if(genericEndpoint instanceof HTTPServerClusterServiceTopologyEndpointPort) {
+            HTTPServerClusterServiceTopologyEndpointPort endpoint = (HTTPServerClusterServiceTopologyEndpointPort) genericEndpoint;
+            serverPath = endpoint.getBasePath();
+        } else {
+            HTTPProcessingPlantTopologyEndpointPort endpoint = (HTTPProcessingPlantTopologyEndpointPort)genericEndpoint;
+            serverPath = endpoint.getBasePath();
+        }
+        String ingresString = buildIngresString(interfaceDNSName, Integer.toString(portValue), serverPath);
         ingresEndpoint.setEndpointSpecification(ingresString);
-        LOG.debug(".specifyIngresTopologyEndpoint(): Exit, ingresEndpoint->{}", ingresEndpoint);
+        getLogger().info(".specifyIngresTopologyEndpoint(): Exit, ingresEndpoint->{}", ingresEndpoint);
         return(ingresEndpoint);
     }
 
     private String buildIngresString(String host, String port, String path){
-        String ingresString = "netty-http:http://"+host+":"+port+"/"+path+"/transactions/{id}";
+        String ingresString = "netty-http:http://"+host+":"+port+path+"/transactions/{id}";
         return(ingresString);
-    }
-
-    protected String getPathSuffix() {
-        String suffix = "?matchOnUriPrefix=true&option.enableCORS=true&option.corsAllowedCredentials=true";
-        return (suffix);
-    }
-
-    public String getServerPath(){
-        getLogger().debug(".getServerPath(): Entry");
-        if(getIngresEndpoint().getEndpointTopologyNode() instanceof HTTPServerClusterServiceTopologyEndpointPort) {
-            HTTPServerClusterServiceTopologyEndpointPort serviceEndpoint = (HTTPServerClusterServiceTopologyEndpointPort)getIngresEndpoint().getEndpointTopologyNode();
-            String serverPath = serviceEndpoint.getBasePath();
-            getLogger().debug(".getServerPath(): Exit, (ClusterService) serverPath->{}", serverPath);
-            return(serverPath);
-        }
-        if(getIngresEndpoint().getEndpointTopologyNode() instanceof HTTPProcessingPlantTopologyEndpointPort){
-            HTTPProcessingPlantTopologyEndpointPort processingPlantEndpoint = (HTTPProcessingPlantTopologyEndpointPort)getIngresEndpoint().getEndpointTopologyNode();
-            String serverPath = processingPlantEndpoint.getBasePath();
-            getLogger().debug(".getServerPath(): Exit, (ProcessingPlant) serverPath->{}", serverPath);
-            return(serverPath);
-        }
-        getLogger().error(".getServerPath(): Cannot resolve Matrix Application Services server Base Path!");
-        return("");
     }
 
     private OnExceptionDefinition routeMatrixEventNotFoundException() {
@@ -164,7 +141,7 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
     }
 
     private OnExceptionDefinition routeResourceUpdateException() {
-        OnExceptionDefinition exceptionDef = onException(ResourceUpdateException.class)
+        OnExceptionDefinition exceptionDef = onException(MatrixUpdateException.class)
                 .handled(true)
                 .log(LoggingLevel.INFO, "ResourceUpdateException...")
                 // use HTTP status 404 when data was not found
@@ -182,11 +159,6 @@ public class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMe
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(500))
                 .setBody(simple("${exception.message}\n"));
         return (exceptionDef);
-    }
-
-    @Override
-    protected String specifyIngresTopologyEndpointName() {
-        return ("events-in");
     }
 
     @Override

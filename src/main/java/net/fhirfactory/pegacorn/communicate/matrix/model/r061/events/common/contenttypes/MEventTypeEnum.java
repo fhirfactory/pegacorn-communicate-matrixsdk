@@ -39,6 +39,12 @@ public enum MEventTypeEnum {
     M_POLICY_RULE_ROOM("m.policy.rule.room"),
     M_POLICY_RULE_SERVER("m.policy.rule.server"),
     M_POLICY_RULE_USER("m.policy.rule.user"),
+    M_ROOM_ENCRYPTED("m.room.encrypted"),
+    M_ROOM_ENCRYPTION("m.room.encryption"),
+    M_ROOM_KEY("m.room_key"),
+    M_ROOM_KEY_REQUEST("m.room_key_request"),
+    M_FORWARDED_ROOM_KEY("m.forwarded_room_key"),
+    M_DUMMY("m.dummy"),
     M_ROOM_CANONICAL_ALIAS("m.room.canonical_alias"),
     M_ROOM_CREATE("m.room.create"),
     M_ROOM_GUEST_ACCESS("m.room.guest_access"),
@@ -52,7 +58,14 @@ public enum MEventTypeEnum {
     M_ROOM_REDACTION("m.room.redaction"),
     M_ROOM_SERVER_ACL("m.room.server_acl"),
     M_ROOM_THIRD_PARTY_INVITE("m.room.third_party_invite"),
-    M_ROOM_TOMBSTONE("m.room.tombstone");
+    M_ROOM_TOMBSTONE("m.room.tombstone"),
+    M_KEY_VERIFICATION_REQUEST("m.key.verification.request"),
+    M_KEY_VERIFICATION_START("m.key.verification.start"),
+    M_KEY_VERIFICATION_CANCEL("m.key.verification.cancel"),
+    M_KEY_VERIFICATION_ACCEPT("m.key.verification.accept"),
+    M_KEY_VERIFICATION_KEY("m.key.verification.key"),
+    M_KEY_VERIFICATION_MAC("m.key.verification.mac")
+    ;
 
     private String eventType;
     private DataParcelTypeDescriptor typeDescriptor;
@@ -122,6 +135,22 @@ public enum MEventTypeEnum {
             case "m.room.avatar":
             case "m.room.pinned_events":
                 parcelTypeDescriptor.setDataParcelSubCategory("RoomEvents");
+                break;
+            case "m.key.verification.request":
+            case "m.key.verification.start":
+            case "m.key.verification.cancel":
+            case "m.key.verification.accept":
+            case "m.key.verification.key":
+            case "m.key.verification.mac":
+                parcelTypeDescriptor.setDataParcelSubCategory("DeviceVerification");
+                break;
+            case "m.room.encryption":
+            case "m.room.encrypted":
+            case "m.room_key":
+            case "m.room_key_request":
+            case "m.forwarded_room_key":
+            case "m.dummy":
+                parcelTypeDescriptor.setDataParcelSubCategory("ProtocolDefinitions");
                 break;
             default:
                 parcelTypeDescriptor.setDataParcelSubCategory( "General");

@@ -21,7 +21,7 @@
  */
 package net.fhirfactory.pegacorn.communicate.matrix.namefactories;
 
-import net.fhirfactory.pegacorn.internals.esr.resources.datatypes.HumanNameESDT;
+import org.hl7.fhir.r4.model.HumanName;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -131,10 +131,10 @@ public class CommunicateRoomNameFactory {
         return(name);
     }
 
-    public String constructPractitionerRoleConversationRoomName(String practitonerRoleName, HumanNameESDT fulfillerPractitionerName, HumanNameESDT clientPractitionerName ){
-        String name = clientPractitionerName.getPreferredGivenName()
+    public String constructPractitionerRoleConversationRoomName(String practitonerRoleName, HumanName fulfillerPractitionerName, HumanName clientPractitionerName ){
+        String name = clientPractitionerName.getGiven()
                 + "<->"
-                + fulfillerPractitionerName.getPreferredGivenName()
+                + fulfillerPractitionerName.getGiven()
                 + "("
                 + PRACTITIONER_ROLE_ONE_ON_ONE_ROOM_QUALIFIER
                 + practitonerRoleName
@@ -143,13 +143,13 @@ public class CommunicateRoomNameFactory {
         return(name);
     }
 
-    public String constructPractitionerRoleConversationRoomCanonicalAlias(String practitonerRoleName, HumanNameESDT fulfillerPractitionerName, HumanNameESDT clientPractitionerName ){
+    public String constructPractitionerRoleConversationRoomCanonicalAlias(String practitonerRoleName, HumanName fulfillerPractitionerName, HumanName clientPractitionerName ){
         String alias = constructPractitionerRoleConversationRoomName(practitonerRoleName, fulfillerPractitionerName, clientPractitionerName) + PRACTITIONER_ROLE_ONE_ON_ONE_ROOM_SUFFIX;
         return(alias);
     }
 
-    public String constructPractitionerRoleConversationRoomTopic(String practitonerRoleName, HumanNameESDT fulfillerPractitionerName){
-        String topicString = practitonerRoleName + "(" + fulfillerPractitionerName.getDisplayName() +")";
+    public String constructPractitionerRoleConversationRoomTopic(String practitonerRoleName, HumanName fulfillerPractitionerName){
+        String topicString = practitonerRoleName + "(" + fulfillerPractitionerName.getNameAsSingleString() +")";
         return(topicString);
     }
 }

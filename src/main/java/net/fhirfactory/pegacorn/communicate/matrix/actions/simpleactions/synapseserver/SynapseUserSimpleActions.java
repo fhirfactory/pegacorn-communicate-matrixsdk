@@ -1,7 +1,7 @@
 package net.fhirfactory.pegacorn.communicate.matrix.actions.simpleactions.synapseserver;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
-import net.fhirfactory.pegacorn.internals.esr.resources.PractitionerESR;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
@@ -15,13 +15,13 @@ public class SynapseUserSimpleActions {
         return(taskResponse);
     }
 
-    public MAPIResponse createUserAccount(PractitionerESR practitioner){
+    public MAPIResponse createUserAccount(SynapseUser practitioner){
         MAPIResponse taskResponse = new MAPIResponse();
 
         return(taskResponse);
     }
 
-    public MAPIResponse updateUserAccount(PractitionerESR practitioner){
+    public MAPIResponse updateUserAccount(SynapseUser practitioner){
         MAPIResponse taskResponse = new MAPIResponse();
 
         return(taskResponse);
