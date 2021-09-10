@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.communicate.matrix.actions.common;
+package net.fhirfactory.pegacorn.communicate.matrix.methods.common;
 
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.common.contenttypes.MEventTypeEnum;

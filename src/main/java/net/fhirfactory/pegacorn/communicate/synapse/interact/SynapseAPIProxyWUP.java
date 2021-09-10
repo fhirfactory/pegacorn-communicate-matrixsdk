@@ -21,6 +21,9 @@
  */
 package net.fhirfactory.pegacorn.communicate.synapse.interact;
 
+import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
+import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
 import net.fhirfactory.pegacorn.components.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationResponse;
@@ -30,21 +33,32 @@ import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.Externa
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.interact.StandardInteractClientTopologyEndpointPort;
 import net.fhirfactory.pegacorn.deployment.topology.model.nodes.external.ConnectedExternalSystemTopologyNode;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
+import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractEgressAPIClientGatewayWUP;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.camel.model.rest.RestBindingMode;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.List;
 
-public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayWUP implements CapabilityFulfillmentInterface {
+public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayWUP implements CapabilityFulfillmentInterface, SynapseAdminProxyInterface {
 
     private static String CAMEL_COMPONENT_TYPE = "netty-http";
+    private String hostName;
+    private int portValue;
+    private String httpScheme;
+    private String webServicePath;
 
     @Inject
     private InteractWorkshop workshop;
+
+    @Inject
+    private SynapseAdminAccessToken synapseAccessToken;
+
+    @Inject
+    private PegacornEnvironmentProperties environmentProperties;
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
@@ -63,15 +77,17 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
         StandardInteractClientTopologyEndpointPort clientTopologyEndpoint = (StandardInteractClientTopologyEndpointPort) getTopologyEndpoint(specifyEgressTopologyEndpointName());
         ConnectedExternalSystemTopologyNode targetSystem = clientTopologyEndpoint.getTargetSystem();
         ExternalSystemIPCEndpoint externalSystemIPCEndpoint = targetSystem.getTargetPorts().get(0);
-        int portValue = externalSystemIPCEndpoint.getTargetPortValue();
-        String targetInterfaceDNSName = externalSystemIPCEndpoint.getTargetPortDNSName();
+        this.portValue = externalSystemIPCEndpoint.getTargetPortValue();
+        this.hostName = externalSystemIPCEndpoint.getTargetPortDNSName();
         String httpType = null;
         if(externalSystemIPCEndpoint.getEncryptionRequired()){
             httpType = "https";
         } else {
             httpType = "http";
         }
-        endpoint.setEndpointSpecification(CAMEL_COMPONENT_TYPE+":"+httpType+"//"+targetInterfaceDNSName+":"+Integer.toString(portValue)+"?requireEndOfData=false");
+        this.httpScheme = httpType;
+        this.webServicePath = externalSystemIPCEndpoint.getTargetPath();
+        endpoint.setEndpointSpecification(CAMEL_COMPONENT_TYPE+":"+ getHttpScheme() + "//"+getHostName() + ":" + getPortValue() + getWebServicePath());
         endpoint.setEndpointTopologyNode(clientTopologyEndpoint);
         endpoint.setFrameworkEnabled(false);
         return endpoint;
@@ -80,15 +96,116 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
     @Override
     public void configure() throws Exception {
 
+        restConfiguration()
+                .producerComponent(CAMEL_COMPONENT_TYPE)
+                .scheme(getHttpScheme())
+                .host(getHostName())
+                .port(getPortValue())
+                .bindingMode(RestBindingMode.json)
+                .contextPath(getWebServicePath());
+
+        from("direct:synapse-api-user-query")
+                .to("rest:get:v2/users");
+
+        from("direct:synapse-api-room-query")
+                .to("rest:get:v1/rooms");
+
     }
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
-        return null;
+        getLogger().debug(".executeTask(): Entry, request->{}", request);
+        String capability = request.getRequiredCapabilityName();
+        CapabilityUtilisationResponse response = new CapabilityUtilisationResponse();
+        response.setDateCompleted(Instant.now());
+        response.setAssociatedRequestID(request.getRequestID());
+        switch(capability){
+            case "Synapse-Room-Query": {
+                SynapseAPIResponse result = executeRoomQuery(request.getRequestContent());
+                response.setSuccessful(result.isSuccessful());
+                if(result.isSuccessful()) {
+                    response.setResponseContent(result.getResponseContent());
+                } else {
+                    response.setResponseContent(result.getErrorContent());
+                }
+                break;
+            }
+            case "Synapse-User-Query": {
+                SynapseAPIResponse result = executeUserQuery(request.getRequestContent());
+                response.setSuccessful(result.isSuccessful());
+                if(result.isSuccessful()) {
+                    response.setResponseContent(result.getResponseContent());
+                } else {
+                    response.setResponseContent(result.getErrorContent());
+                }
+                break;
+            }
+            default:{
+                response.setSuccessful(false);
+            }
+        }
+        getLogger().debug(".executeTask(): Exit, response->{}", response);
+        return(response);
     }
 
     @Override
     protected void registerCapabilities(){
-        getProcessingPlant().registerCapabilityFulfillmentService("Synapse-RoomServer-Query", this);
+        getProcessingPlant().registerCapabilityFulfillmentService("Synapse-Room-Query", this);
+        getProcessingPlant().registerCapabilityFulfillmentService("Synapse-User-Query", this);
+    }
+
+    @Override
+    public SynapseAPIResponse executeRoomQuery(String query) {
+        return null;
+    }
+
+    @Override
+    public SynapseAPIResponse executeUserQuery(String query) {
+        return null;
+    }
+
+    @Override
+    public void executePostInitialisationActivities(){
+        // Get the AccessToken and assign it
+        String synapseAdminUserName = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ADMIN_USER_NAME_PROPERTY);
+        String synapseAdminUserPassword = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ADMIN_USER_PASSWORD_PROPERTY);
+        String synapseAccessToken  = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ACCESS_TOKEN_PROPERTY);
+
+        if(StringUtils.isBlank(synapseAdminUserName) || StringUtils.isBlank(synapseAdminUserPassword) || StringUtils.isBlank(synapseAccessToken)){
+            throw(new RuntimeException("SynapseAdminUserName or SynapseAdminUserPassword is blank"));
+        }
+
+        getSynapseAccessToken().setRemoteAccessToken(synapseAccessToken);
+        getSynapseAccessToken().setUserName(synapseAdminUserName);
+        getSynapseAccessToken().setUserPassword(synapseAdminUserPassword);
+    }
+
+    //
+    // Getters (and Setters)
+    //
+
+    protected SynapseAdminAccessToken getSynapseAccessToken(){
+        return(this.synapseAccessToken);
+    }
+
+    protected int getPortValue() {
+        return (this.portValue);
+    }
+
+    protected String getHttpScheme() {
+        return(this.httpScheme);
+    }
+
+    protected String getHostName(){
+        return(this.hostName);
+    }
+
+    protected String getWebServicePath(){
+        return(this.webServicePath);
+    }
+
+    @Override
+    public InteractWorkshop getWorkshop() {
+        return workshop;
     }
 }

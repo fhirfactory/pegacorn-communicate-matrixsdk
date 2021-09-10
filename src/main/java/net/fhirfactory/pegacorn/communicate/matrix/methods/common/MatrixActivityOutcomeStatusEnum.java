@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.communicate.matrix.actions.common;
+package net.fhirfactory.pegacorn.communicate.matrix.methods.common;
 
 public enum MatrixActivityOutcomeStatusEnum {
     MATRIX_ACTIVITY_OUTCOME_NO_ACTION ("matrix.activity-outcome.no-action"),

@@ -19,14 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.communicate.matrix.actions.simpleactions.matrixserver;
+package net.fhirfactory.pegacorn.communicate.matrix.methods;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
 
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class MatrixUserSimpleActions {
+public class MatrixUserMethods {
 
 
     /**
