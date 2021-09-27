@@ -41,10 +41,12 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
 
 import javax.inject.Inject;
+import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
 
 public abstract class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMessagingGatewayWUP {
 
     private static String INGRES_GATEWAY_COMPONENT = "netty-http";
+            
 
     @Inject
     private InteractWorkshop workshop;

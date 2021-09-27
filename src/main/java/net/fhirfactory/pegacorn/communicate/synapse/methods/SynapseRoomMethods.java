@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +47,8 @@ public class SynapseRoomMethods {
 
     public SynapseRoomMethods(){
         jsonMapper = new ObjectMapper();
+        JavaTimeModule module = new JavaTimeModule();
+        jsonMapper.registerModule(module);
         jsonMapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES, true);
     }
 
