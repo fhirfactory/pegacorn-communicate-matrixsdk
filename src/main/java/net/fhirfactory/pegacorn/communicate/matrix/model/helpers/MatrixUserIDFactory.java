@@ -23,7 +23,7 @@ package net.fhirfactory.pegacorn.communicate.matrix.model.helpers;
 
 import net.fhirfactory.pegacorn.deployment.communicate.matrix.MatrixIntegrationConfigurationInterface;
 import net.fhirfactory.pegacorn.deployment.communicate.matrix.SynapseServerIntegrationConfigurationInterface;
-import org.apache.maven.shared.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

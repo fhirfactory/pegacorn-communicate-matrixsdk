@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.common.contenttypes;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.constants.MatrixClientServiceAPIConstants;
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelTypeDescriptor;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
 
 public enum MEventTypeEnum {
     M_CALL_ANSWER("m.call.answer"),

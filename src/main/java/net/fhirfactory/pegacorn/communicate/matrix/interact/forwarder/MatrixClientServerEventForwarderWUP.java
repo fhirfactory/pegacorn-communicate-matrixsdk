@@ -21,21 +21,18 @@
  */
 package net.fhirfactory.pegacorn.communicate.matrix.interact.forwarder;
 
-import net.fhirfactory.pegacorn.components.capabilities.CapabilityFulfillmentInterface;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.ExternalSystemIPCEndpoint;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.interact.StandardInteractClientTopologyEndpointPort;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.external.ConnectedExternalSystemTopologyNode;
+import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPClientAdapter;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.interact.matrix.InteractMatrixClientEndpoint;
+import net.fhirfactory.pegacorn.core.model.topology.nodes.external.ConnectedExternalSystemTopologyNode;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractEgressMessagingGatewayWUP;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -59,13 +56,13 @@ public abstract class MatrixClientServerEventForwarderWUP extends InteractEgress
     @Override
     protected MessageBasedWUPEndpoint specifyEgressEndpoint() {
         MessageBasedWUPEndpoint endpoint = new MessageBasedWUPEndpoint();
-        StandardInteractClientTopologyEndpointPort clientTopologyEndpoint = (StandardInteractClientTopologyEndpointPort) getTopologyEndpoint(specifyEgressTopologyEndpointName());
+        InteractMatrixClientEndpoint clientTopologyEndpoint = (InteractMatrixClientEndpoint) getTopologyEndpoint(specifyEgressTopologyEndpointName());
         ConnectedExternalSystemTopologyNode targetSystem = clientTopologyEndpoint.getTargetSystem();
-        ExternalSystemIPCEndpoint externalSystemIPCEndpoint = targetSystem.getTargetPorts().get(0);
-        int portValue = externalSystemIPCEndpoint.getTargetPortValue();
-        String targetInterfaceDNSName = externalSystemIPCEndpoint.getTargetPortDNSName();
+        HTTPClientAdapter synapseServerClient = (HTTPClientAdapter)targetSystem.getTargetPorts().get(0);
+        int portValue = synapseServerClient.getPortNumber();
+        String targetInterfaceDNSName = synapseServerClient.getHostName();
         String httpType = null;
-        if(externalSystemIPCEndpoint.getEncryptionRequired()){
+        if(synapseServerClient.isEncrypted()){
             httpType = "https";
         } else {
             httpType = "http";

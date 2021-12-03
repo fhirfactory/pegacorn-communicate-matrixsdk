@@ -27,10 +27,9 @@ import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.Incom
 import net.fhirfactory.pegacorn.communicate.matrix.interact.receiver.beans.IncomingMatrixMessageSplitter;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixEventNotFoundException;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixUpdateException;
-import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCServerTopologyEndpoint;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPProcessingPlantTopologyEndpointPort;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
+import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPServerAdapter;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.interact.matrix.InteractMatrixServerEndpoint;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
@@ -41,7 +40,6 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
 
 import javax.inject.Inject;
-import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
 
 public abstract class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMessagingGatewayWUP {
 
@@ -101,25 +99,20 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         getLogger().debug(".specifyIngresTopologyEndpoint(): Entry");
         MessageBasedWUPEndpoint ingresEndpoint = new MessageBasedWUPEndpoint();
         ingresEndpoint.setFrameworkEnabled(false);
-        IPCServerTopologyEndpoint genericEndpoint = (IPCServerTopologyEndpoint)getTopologyEndpoint(specifyIngresTopologyEndpointName());
-        if (genericEndpoint == null) {
+        InteractMatrixServerEndpoint myMatrixServerAPIServicesGW = (InteractMatrixServerEndpoint)getTopologyEndpoint(specifyIngresTopologyEndpointName());
+        if (myMatrixServerAPIServicesGW == null) {
             getLogger().error(".specifyIngresTopologyEndpoint(): Unable to derive endpoint for Matrix Application Services API  Server");
             return (ingresEndpoint);
         }
         // Assign the Associated TopologyNode to the Ingres Endpoint
-        ingresEndpoint.setEndpointTopologyNode(genericEndpoint);
-        getLogger().trace(".specifyIngresTopologyEndpoint(): Resolved genericEndpoint->{}", genericEndpoint);
+        ingresEndpoint.setEndpointTopologyNode(myMatrixServerAPIServicesGW);
+        getLogger().trace(".specifyIngresTopologyEndpoint(): Resolved myMatrixServerAPIServicesGW->{}", myMatrixServerAPIServicesGW);
         // Building the Endpoint Specification (String)
-        int portValue = genericEndpoint.getPortValue();
-        String interfaceDNSName = genericEndpoint.getHostDNSName();
-        String serverPath = null;
-        if(genericEndpoint instanceof HTTPServerClusterServiceTopologyEndpointPort) {
-            HTTPServerClusterServiceTopologyEndpointPort endpoint = (HTTPServerClusterServiceTopologyEndpointPort) genericEndpoint;
-            serverPath = endpoint.getBasePath();
-        } else {
-            HTTPProcessingPlantTopologyEndpointPort endpoint = (HTTPProcessingPlantTopologyEndpointPort)genericEndpoint;
-            serverPath = endpoint.getBasePath();
-        }
+
+        HTTPServerAdapter httpServerAdapter = myMatrixServerAPIServicesGW.getHTTPServerAdapter();
+        int portValue = httpServerAdapter.getPortNumber();
+        String interfaceDNSName = httpServerAdapter.getHostName();
+        String serverPath = httpServerAdapter.getContextPath();
         String ingresString = buildIngresString(interfaceDNSName, Integer.toString(portValue), serverPath);
         ingresEndpoint.setEndpointSpecification(ingresString);
         getLogger().info(".specifyIngresTopologyEndpoint(): Exit, ingresEndpoint->{}", ingresEndpoint);

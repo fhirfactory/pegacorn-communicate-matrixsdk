@@ -24,14 +24,14 @@ package net.fhirfactory.pegacorn.communicate.synapse.interact;
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
-import net.fhirfactory.pegacorn.components.capabilities.CapabilityFulfillmentInterface;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.ExternalSystemIPCEndpoint;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.interact.StandardInteractClientTopologyEndpointPort;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.external.ConnectedExternalSystemTopologyNode;
+import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPClientAdapter;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.interact.matrix.InteractMatrixClientEndpoint;
+import net.fhirfactory.pegacorn.core.model.topology.nodes.external.ConnectedExternalSystemTopologyNode;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
@@ -74,19 +74,19 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
     @Override
     protected MessageBasedWUPEndpoint specifyEgressEndpoint() {
         MessageBasedWUPEndpoint endpoint = new MessageBasedWUPEndpoint();
-        StandardInteractClientTopologyEndpointPort clientTopologyEndpoint = (StandardInteractClientTopologyEndpointPort) getTopologyEndpoint(specifyEgressTopologyEndpointName());
+        InteractMatrixClientEndpoint clientTopologyEndpoint = (InteractMatrixClientEndpoint) getTopologyEndpoint(specifyEgressTopologyEndpointName());
         ConnectedExternalSystemTopologyNode targetSystem = clientTopologyEndpoint.getTargetSystem();
-        ExternalSystemIPCEndpoint externalSystemIPCEndpoint = targetSystem.getTargetPorts().get(0);
-        this.portValue = externalSystemIPCEndpoint.getTargetPortValue();
-        this.hostName = externalSystemIPCEndpoint.getTargetPortDNSName();
+        HTTPClientAdapter httpClient = (HTTPClientAdapter) targetSystem.getTargetPorts().get(0);
+        this.portValue = httpClient.getPortNumber();
+        this.hostName = httpClient.getHostName();
         String httpType = null;
-        if(externalSystemIPCEndpoint.getEncryptionRequired()){
+        if(httpClient.isEncrypted()){
             httpType = "https";
         } else {
             httpType = "http";
         }
         this.httpScheme = httpType;
-        this.webServicePath = externalSystemIPCEndpoint.getTargetPath();
+        this.webServicePath = httpClient.getContextPath();
         endpoint.setEndpointSpecification(CAMEL_COMPONENT_TYPE+":"+ getHttpScheme() + "//"+getHostName() + ":" + getPortValue() + getWebServicePath());
         endpoint.setEndpointTopologyNode(clientTopologyEndpoint);
         endpoint.setFrameworkEnabled(false);
@@ -117,11 +117,11 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
         getLogger().debug(".executeTask(): Entry, request->{}", request);
         String capability = request.getRequiredCapabilityName();
         CapabilityUtilisationResponse response = new CapabilityUtilisationResponse();
-        response.setDateCompleted(Instant.now());
+        response.setInstantCompleted(Instant.now());
         response.setAssociatedRequestID(request.getRequestID());
         switch(capability){
             case "Synapse-Room-Query": {
-                SynapseAPIResponse result = executeRoomQuery(request.getRequestContent());
+                SynapseAPIResponse result = executeRoomQuery(request.getRequestStringContent());
                 response.setSuccessful(result.isSuccessful());
                 if(result.isSuccessful()) {
                     response.setResponseContent(result.getResponseContent());
@@ -131,7 +131,7 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
                 break;
             }
             case "Synapse-User-Query": {
-                SynapseAPIResponse result = executeUserQuery(request.getRequestContent());
+                SynapseAPIResponse result = executeUserQuery(request.getRequestStringContent());
                 response.setSuccessful(result.isSuccessful());
                 if(result.isSuccessful()) {
                     response.setResponseContent(result.getResponseContent());

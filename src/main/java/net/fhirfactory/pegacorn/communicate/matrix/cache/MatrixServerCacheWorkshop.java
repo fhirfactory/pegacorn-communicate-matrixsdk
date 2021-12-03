@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.communicate.matrix.cache;
 
 
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeTypeEnum;
+import net.fhirfactory.pegacorn.core.model.componentid.PegacornSystemComponentTypeTypeEnum;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +48,8 @@ public class MatrixServerCacheWorkshop extends Workshop {
     }
 
     @Override
-    protected TopologyNodeTypeEnum specifyWorkshopType() {
-        return (TopologyNodeTypeEnum.WORKSHOP);
+    protected PegacornSystemComponentTypeTypeEnum specifyWorkshopType() {
+        return (PegacornSystemComponentTypeTypeEnum.WORKSHOP);
     }
 
     @Override
