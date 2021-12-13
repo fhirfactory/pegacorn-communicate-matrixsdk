@@ -6,3 +6,11 @@ target/maven-status/maven-compiler-plugin/compile/default-compile/
 *.class
 
 target/
+
+.project
+
+.classpath
+
+.settings/
+
+nbactions.xml
