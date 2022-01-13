@@ -22,14 +22,41 @@
 package net.fhirfactory.pegacorn.communicate.matrix.methods;
 
 
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.room.message.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import net.fhirfactory.pegacorn.communicate.matrix.model.interfaces.MatrixEventForwarderInterface;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public class MatrixInstantMessageMethods {
+    private static final Logger LOG = LoggerFactory.getLogger(MatrixInstantMessageMethods.class);
 
+    private ObjectMapper jsonMapper;
+
+    @Inject
+    private MatrixEventForwarderInterface matrixEventForwarder;
+
+    //
+    // Constructor(s)
+    //
+
+    public MatrixInstantMessageMethods() {
+        jsonMapper = new ObjectMapper();
+        JavaTimeModule module = new JavaTimeModule();
+        jsonMapper.registerModule(module);
+        jsonMapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES,true);
+    }
+
+    //
+    // Business Methods
+    //
 
     public MAPIResponse syncRoomEvents(String roomID){
         MAPIResponse response = new MAPIResponse();
@@ -88,8 +115,15 @@ public class MatrixInstantMessageMethods {
     }
 
     public MAPIResponse postTextMessage(String roomID, String userID, MRoomTextMessageEvent textMessage){
-        MAPIResponse response = new MAPIResponse();
-
+        getLogger().debug(".postTextMessage(): Entry, roomID->{}, userID->{}, textMessage->{}", roomID, userID, textMessage);
+        if(userID != null){
+            textMessage.setSender(userID);
+        }
+        if(roomID != null){
+            textMessage.setRoomIdentifier(roomID);
+        }
+        MAPIResponse response = matrixEventForwarder.forwardEventIntoMatrix(textMessage);
+        getLogger().debug(".postTextMessage(): Exit, response->{}", response);
         return(response);
     }
 
@@ -97,5 +131,13 @@ public class MatrixInstantMessageMethods {
         MAPIResponse response = new MAPIResponse();
 
         return(response);
+    }
+
+    //
+    // Getters and Setters
+    //
+
+    protected Logger getLogger(){
+        return(LOG);
     }
 }

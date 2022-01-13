@@ -23,18 +23,30 @@ package net.fhirfactory.pegacorn.communicate.synapse.methods;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
+import io.netty.handler.codec.http.HttpMethod;
+import javassist.compiler.ast.Symbol;
+import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
+import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +56,12 @@ public class SynapseRoomMethods {
     private static final Logger LOG = LoggerFactory.getLogger(SynapseRoomMethods.class);
 
     ObjectMapper jsonMapper;
+
+    @Inject
+    SynapseAdminProxyInterface synapseProxy;
+
+    @Produce
+    private ProducerTemplate camelRouteInjector;
 
     public SynapseRoomMethods(){
         jsonMapper = new ObjectMapper();
@@ -62,10 +80,45 @@ public class SynapseRoomMethods {
      * @param searchTerm
      * @return
      */
-    public MAPIResponse getRooms(String searchTerm){
-        MAPIResponse taskResponse = new MAPIResponse();
+    public List<SynapseRoom> getRooms(String searchTerm){
+        getLogger().debug(".getRooms(): Entry, searchTerm->{}", searchTerm);
 
-        return(taskResponse);
+        SynapseQuery query = new SynapseQuery();
+
+        //
+        // Create the Query
+        query.setHttpPath("/_synapse/admin/v1/rooms?limit=5000");
+        query.setHttpMethod(HttpMethod.GET.name());
+
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+
+        getLogger().debug(".getRooms(): response->{}", response);
+
+        List<SynapseRoom> roomSet = new ArrayList<>();
+        if(response.getResponseCode() != 200){
+            getLogger().debug("getRooms(): Exit, something went wrong, returning empty list");
+            return(roomSet);
+        }
+
+        //
+        // Extract the Rooms
+        JSONObject localMessageObject = new JSONObject(response.getResponseContent());
+        LOG.trace("getRooms(): Converted to JSONObject --> " + localMessageObject.toString());
+        JSONArray localMessageEvents = localMessageObject.getJSONArray("rooms");
+        LOG.trace("getRooms(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
+        boolean processingIsSuccessful = true;
+
+        String rawRoomSet = localMessageEvents.toString();
+        try {
+            roomSet = getJSONMapper().readValue(rawRoomSet, new TypeReference<List<SynapseRoom>>(){});
+        } catch (JsonProcessingException e) {
+            getLogger().error(".getRooms(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
+        }
+
+        getLogger().debug(".getRooms(): Retrieved Room Count->{}", roomSet.size());
+
+        getLogger().debug(".getRooms(): Entry, roomSet->{}", roomSet);
+        return(roomSet);
     }
 
     /**
@@ -74,8 +127,8 @@ public class SynapseRoomMethods {
      * @param userID
      * @return
      */
-    public MAPIResponse getRoomsForUser(String userID){
-        MAPIResponse taskResponse = new MAPIResponse();
+    public SynapseAPIResponse getRoomsForUser(String userID){
+        SynapseAPIResponse taskResponse = new SynapseAPIResponse();
 
         return(taskResponse);
     }
@@ -86,10 +139,29 @@ public class SynapseRoomMethods {
      * @param roomID
      * @return
      */
-    public MAPIResponse getRoomDetail(String roomID){
-        MAPIResponse taskResponse = new MAPIResponse();
+    public SynapseRoom getRoomDetail(String roomID){
+        getLogger().debug(".getRoomDetail(): Entry, roomID->{}", roomID);
+        SynapseQuery query = new SynapseQuery();
 
-        return(taskResponse);
+        //
+        // Create the Query
+        query.setHttpPath("/_synapse/admin/v1/rooms/"+roomID);
+        query.setHttpMethod(HttpMethod.GET.name());
+
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+        getLogger().trace(".getRoomDetail(): response->{}", response);
+
+        SynapseRoom synapseRoom = null;
+        if(response.getResponseCode() == 200) {
+            try {
+                synapseRoom = getJSONMapper().readValue(response.getResponseContent(), SynapseRoom.class);
+
+            } catch (JsonProcessingException e) {
+                getLogger().error(".getRooms(): Cannot convert retrieved room, error->{}, stacktrace->{}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
+            }
+        }
+        getLogger().debug(".getRoomDetail(): Exit, synapseRoom->{}", synapseRoom);
+        return(synapseRoom);
     }
 
     /**
@@ -98,10 +170,30 @@ public class SynapseRoomMethods {
      * @param roomID
      * @return
      */
-    public MAPIResponse getRoomMembers(String roomID){
-        MAPIResponse taskResponse = new MAPIResponse();
+    public SynapseAPIResponse getRoomMembers(String roomID){
+        SynapseAPIResponse taskResponse = new SynapseAPIResponse();
+
+
 
         return(taskResponse);
+    }
+
+    public SynapseAPIResponse addRoomMember(String roomID, String memberId){
+        getLogger().debug(".addRoomMember(): Entry, roomID->{}, memberId->{}", roomID, memberId);
+        SynapseQuery query = new SynapseQuery();
+        //
+        // Create the Query
+        query.setHttpPath("/_synapse/admin/v1/join/"+roomID);
+        query.setHttpMethod(HttpMethod.POST.name());
+
+        JSONObject bodyObject = new JSONObject();
+        bodyObject.put("user_id", memberId);
+        query.setBody(bodyObject.toString(2));
+
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+
+        getLogger().debug(".getRoomDetail(): Exit, response->{}", response);
+        return(response);
     }
 
     /**
@@ -110,8 +202,8 @@ public class SynapseRoomMethods {
      * @param roomID
      * @return
      */
-    public MAPIResponse getRoomState(String roomID){
-        MAPIResponse taskResponse = new MAPIResponse();
+    public SynapseAPIResponse getRoomState(String roomID){
+        SynapseAPIResponse taskResponse = new SynapseAPIResponse();
 
         return(taskResponse);
     }
@@ -136,10 +228,24 @@ public class SynapseRoomMethods {
      * @param roomID
      * @return
      */
-    public MAPIResponse deleteRoom(String roomID){
-        MAPIResponse taskResponse = new MAPIResponse();
+    public SynapseAPIResponse deleteRoom(String roomID, String reason){
+        getLogger().debug(".deleteRoom(): Entry, roomID->{}", roomID);
+        SynapseQuery query = new SynapseQuery();
+        //
+        // Create the Query
+        query.setHttpPath("/_synapse/admin/v1/rooms/"+roomID);
+        query.setHttpMethod(HttpMethod.DELETE.name());
+        JSONObject body = new JSONObject();
+        body.put("message", reason);
+        body.put("block", true);
+        body.put("purge", true);
+        String bodyAsString = body.toString(2);
+        query.setBody(bodyAsString);
 
-        return(taskResponse);
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+
+        getLogger().trace(".deleteRoom(): response->{}", response);
+        return(response);
     }
 
     //
@@ -159,9 +265,8 @@ public class SynapseRoomMethods {
         if(StringUtils.isBlank(roomName)){
             return(false);
         }
-        MAPIResponse response = getRooms(roomName);
-        if(response.isSuccessful()){
-            List<SynapseRoom> roomList = extractSearchResponseDetail(response.getResponseContent());
+        List<SynapseRoom> roomList = getRooms(roomName);
+        if(!roomList.isEmpty()){
             for(SynapseRoom currentRoom: roomList){
                 String currentRoomName = currentRoom.getName();
                 if(StringUtils.isNotBlank(currentRoomName)){
@@ -186,9 +291,8 @@ public class SynapseRoomMethods {
         if(StringUtils.isBlank(userID) || StringUtils.isBlank(roomName)) {
             return (false);
         }
-        MAPIResponse response = getRooms(roomName);
-        if(response.isSuccessful()){
-            List<SynapseRoom> roomList = extractSearchResponseDetail(response.getResponseContent());
+        List<SynapseRoom> roomList = getRooms(roomName);
+        if(!roomList.isEmpty()){
             for(SynapseRoom currentRoom: roomList){
                 String currentRoomName = currentRoom.getName();
                 if(roomName.contentEquals(currentRoomName)){
@@ -240,7 +344,7 @@ public class SynapseRoomMethods {
         if(StringUtils.isBlank(roomID)){
             return(memberIDList);
         }
-        MAPIResponse response = getRoomMembers(roomID);
+        SynapseAPIResponse response = getRoomMembers(roomID);
         if(response.isSuccessful()){
             String responseString = response.getResponseContent();
             if(StringUtils.isNotBlank(responseString)){
@@ -250,5 +354,13 @@ public class SynapseRoomMethods {
             }
         }
         return(memberIDList);
+    }
+
+    //
+    // Getters (and Setters)
+    //
+
+    protected Logger getLogger(){
+        return(LOG);
     }
 }

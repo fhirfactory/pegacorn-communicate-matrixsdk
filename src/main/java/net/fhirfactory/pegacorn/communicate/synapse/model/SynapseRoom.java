@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SynapseRoom {
     private String roomID;
     private String name;
+    private String avatar;
+    private String topic;
     private String canonicalAlias;
     private int joinedMembers;
     private int joinedLocalMembers;
@@ -38,6 +40,41 @@ public class SynapseRoom {
     private String guestAccess;
     private String historyVisibility;
     private int stateEventsCount;
+    private int joinedLocalDevices;
+
+    //
+    // Getters and Setters
+    //
+
+    @JsonProperty("joined_local_devices")
+    public int getJoinedLocalDevices() {
+        return joinedLocalDevices;
+    }
+
+    @JsonProperty("joined_local_devices")
+    public void setJoinedLocalDevices(int joinedLocalDevices) {
+        this.joinedLocalDevices = joinedLocalDevices;
+    }
+
+    @JsonProperty("topic")
+    public String getTopic() {
+        return topic;
+    }
+
+    @JsonProperty("topic")
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    @JsonProperty("avatar")
+    public String getAvatar() {
+        return avatar;
+    }
+
+    @JsonProperty("avatar")
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     @JsonProperty("room_id")
     public String getRoomID() {
@@ -196,6 +233,7 @@ public class SynapseRoom {
                 ", guestAccess='" + guestAccess + '\'' +
                 ", historyVisibility='" + historyVisibility + '\'' +
                 ", stateEventsCount=" + stateEventsCount +
+                ", avatar=" + avatar +
                 '}';
     }
 }

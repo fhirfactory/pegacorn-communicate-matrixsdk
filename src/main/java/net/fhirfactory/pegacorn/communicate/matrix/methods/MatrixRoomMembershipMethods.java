@@ -22,8 +22,8 @@
 package net.fhirfactory.pegacorn.communicate.matrix.methods;
 
 
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.rooms.MJoinedRooms;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MJoinedRooms;
 
 import javax.enterprise.context.ApplicationScoped;
 

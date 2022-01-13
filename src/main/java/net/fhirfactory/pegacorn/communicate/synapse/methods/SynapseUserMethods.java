@@ -21,14 +21,55 @@
  */
 package net.fhirfactory.pegacorn.communicate.synapse.methods;
 
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.netty.handler.codec.http.HttpMethod;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
+import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
 public class SynapseUserMethods {
+    private static final Logger LOG = LoggerFactory.getLogger(SynapseUserMethods.class);
+
+    ObjectMapper jsonMapper;
+
+    @Inject
+    SynapseAdminProxyInterface synapseProxy;
+
+    @Produce
+    private ProducerTemplate camelRouteInjector;
+
+    public SynapseUserMethods(){
+        jsonMapper = new ObjectMapper();
+        JavaTimeModule module = new JavaTimeModule();
+        jsonMapper.registerModule(module);
+        jsonMapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES, true);
+    }
+
+    //
+    // Business Methods
+    //
 
     public MAPIResponse getUserAccountDetail(String userID){
         MAPIResponse taskResponse = new MAPIResponse();
@@ -52,6 +93,38 @@ public class SynapseUserMethods {
         MAPIResponse taskResponse = new MAPIResponse();
 
         return(taskResponse);
+    }
+
+    public List<SynapseUser> getALLAccounts(){
+        getLogger().debug(".getALLAccounts(): Entry");
+        SynapseQuery query = new SynapseQuery();
+        //
+        // Create the Query
+        query.setHttpPath("/_synapse/admin/v2/users");
+        query.setHttpMethod(HttpMethod.GET.name());
+
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+        getLogger().debug(".getALLAccounts(): response->{}", response);
+
+        //
+        // Extract the Rooms
+        JSONObject localMessageObject = new JSONObject(response.getResponseContent());
+        LOG.trace("getALLAccounts(): Converted to JSONObject --> " + localMessageObject.toString());
+        JSONArray localMessageEvents = localMessageObject.getJSONArray("users");
+        LOG.trace("getALLAccounts(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
+        boolean processingIsSuccessful = true;
+
+        String rawUserSet = localMessageEvents.toString();
+        List<SynapseUser> userList = new ArrayList<>();
+        try {
+            userList = getJSONMapper().readValue(rawUserSet, new TypeReference<List<SynapseUser>>(){});
+        } catch (JsonProcessingException e) {
+            getLogger().error(".getRooms(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
+        }
+
+        getLogger().info(".getRooms(): Retrieved User Count->{}", userList.size());
+
+        return(userList);
     }
 
     public MAPIResponse getUserSessions(String userID){
@@ -82,5 +155,17 @@ public class SynapseUserMethods {
         MAPIResponse taskResponse = new MAPIResponse();
 
         return(taskResponse);
+    }
+
+    //
+    // Getters (and Setters)
+    //
+
+    protected Logger getLogger(){
+        return(LOG);
+    }
+
+    public ObjectMapper getJSONMapper() {
+        return jsonMapper;
     }
 }

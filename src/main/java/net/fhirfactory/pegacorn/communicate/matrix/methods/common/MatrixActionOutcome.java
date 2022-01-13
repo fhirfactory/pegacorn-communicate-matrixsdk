@@ -22,8 +22,8 @@
 package net.fhirfactory.pegacorn.communicate.matrix.methods.common;
 
 
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.common.contenttypes.MEventTypeEnum;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.events.room.message.contenttypes.MRoomMessageTypeEnum;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.common.contenttypes.MEventTypeEnum;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MRoomMessageTypeEnum;
 
 import java.util.Objects;
 

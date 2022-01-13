@@ -23,19 +23,52 @@ package net.fhirfactory.pegacorn.communicate.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
+
 public abstract class APIAccessToken implements Serializable {
+    private String userName;
     private String remoteAccessToken;
     private String localAccessToken;
     private Instant lastAccessTime;
     private Object accessLock;
+    private String userPassword;
+
+    public static String SYNAPSE_ADMIN_USER_PASSWORD_PROPERTY = "SYNAPSE_ADMIN_USER_PASSWORD";
+    public static String SYNAPSE_ACCESS_TOKEN_PROPERTY = "SYNAPSE_ACCESS_TOKEN";
+    public static String SYNAPSE_ADMIN_USER_NAME_PROPERTY = "SYNAPSE_ADMIN_USER_NAME";
+    public static String MATRIX_BRIDGE_TOKEN_PROPERTY = "MATRIX_BRIDGE_ACCESS_TOKEN";
+
+    //
+    // Constructor(s)
+    //
 
     public APIAccessToken(){
         this.accessLock = new Object();
         this.lastAccessTime = Instant.now();
+    }
+
+    //
+    // Getters and Setters
+    //
+
+    public String getUserPassword() {
+        return userPassword;
+    }
+
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getRemoteAccessToken() {

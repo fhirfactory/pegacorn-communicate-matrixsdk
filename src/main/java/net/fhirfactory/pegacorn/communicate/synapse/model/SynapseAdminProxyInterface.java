@@ -21,9 +21,14 @@
  */
 package net.fhirfactory.pegacorn.communicate.synapse.model;
 
+import io.netty.handler.codec.http.HttpMethod;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
+import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery;
 
 public interface SynapseAdminProxyInterface {
-    public SynapseAPIResponse executeRoomQuery(String query);
-    public SynapseAPIResponse executeUserQuery(String query);
+    public SynapseAPIResponse executeRoomAction(SynapseQuery synapseQuery);
+    public SynapseAPIResponse executeUserAction(SynapseQuery synapseQuery);
+    public String getSynapseLoginIngresEndpoint();
+    public String getSynapseRoomActionIngresEndpoint();
+    public String getSynapseUserActionIngresEndpoint();
 }

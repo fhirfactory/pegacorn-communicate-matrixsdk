@@ -28,52 +28,15 @@ import java.util.Objects;
 
 @ApplicationScoped
 public class SynapseAdminAccessToken extends APIAccessToken  {
-    private String userName;
-    private String userPassword;
-
-    public static String SYNAPSE_ADMIN_USER_NAME_PROPERTY = "SYNAPSE_ADMIN_USER_NAME";
-    public static String SYNAPSE_ADMIN_USER_PASSWORD_PROPERTY = "SYNAPSE_ADMIN_USER_PASSWORD";
-    public static String SYNAPSE_ACCESS_TOKEN_PROPERTY = "SYNAPSE_ACCESS_TOKEN";
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SynapseAdminAccessToken)) return false;
-        if (!super.equals(o)) return false;
-        SynapseAdminAccessToken that = (SynapseAdminAccessToken) o;
-        return Objects.equals(getUserName(), that.getUserName()) && Objects.equals(getUserPassword(), that.getUserPassword());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getUserName(), getUserPassword());
-    }
 
     @Override
     public String toString() {
         return "SynapseAdminAccessToken{" +
-                "remoteAccessToken='" + getRemoteAccessToken() + '\'' +
+                "userPassword='" + getUserPassword() + '\'' +
+                ", userName='" + getUserName() + '\'' +
+                ", remoteAccessToken='" + getRemoteAccessToken() + '\'' +
                 ", localAccessToken='" + getLocalAccessToken() + '\'' +
                 ", lastAccessTime=" + getLastAccessTime() +
-                ", accessLock=" + getAccessLock() +
-                ", userName='" + userName + '\'' +
-                ", userPassword='" + userPassword + '\'' +
                 '}';
     }
 }

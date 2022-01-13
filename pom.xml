@@ -75,7 +75,7 @@
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
             <version>${version-javax.enterprise-cdi-api}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -102,16 +102,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${version-org.apache.commons-lang3}</version>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Apache HTTP Components (non-Camel) Libraries                                  -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${version-org.apache.httpcomponents-httpclient}</version>
         </dependency>
 
         <!--*******************************************************************************-->

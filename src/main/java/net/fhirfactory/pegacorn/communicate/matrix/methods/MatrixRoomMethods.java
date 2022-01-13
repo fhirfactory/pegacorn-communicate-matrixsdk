@@ -21,14 +21,55 @@
  */
 package net.fhirfactory.pegacorn.communicate.matrix.methods;
 
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.common.MAPIResponse;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.rooms.MRoomCreation;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r061.api.rooms.MRoomVisibilityEnum;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.netty.handler.codec.http.HttpMethod;
+import net.fhirfactory.pegacorn.communicate.matrix.methods.common.MatrixQuery;
+import net.fhirfactory.pegacorn.communicate.matrix.model.interfaces.MatrixAdminProxyInterface;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MCreationContentResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
+import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
+import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.List;
 
 @ApplicationScoped
 public class MatrixRoomMethods {
+    private static final Logger LOG = LoggerFactory.getLogger(MatrixSpaceMethods.class);
+
+    private ObjectMapper jsonMapper;
+
+    @Inject
+    private SynapseRoomMethods synapseRoomAPI;
+
+    @Inject
+    private MatrixAdminProxyInterface matrixAdminAPI;
+
+    //
+    // Constructor(s)
+    //
+
+    public MatrixRoomMethods(){
+        jsonMapper = new ObjectMapper();
+        JavaTimeModule module = new JavaTimeModule();
+        jsonMapper.registerModule(module);
+        jsonMapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES,true);
+    }
+
+    //
+    // Business Methods
+    //
 
     public MAPIResponse getRoom(String roomID){
         MAPIResponse taskResponse = new MAPIResponse();
@@ -45,9 +86,11 @@ public class MatrixRoomMethods {
      * @return
      */
     public MAPIResponse getPublicRooms(){
-        MAPIResponse taskResponse = new MAPIResponse();
+        List<SynapseRoom> roomList = synapseRoomAPI.getRooms("");
 
-        return(taskResponse);
+        MAPIResponse mapiResponse = new MAPIResponse();
+
+        return(mapiResponse);
     }
 
     /**
@@ -151,10 +194,37 @@ public class MatrixRoomMethods {
      * @param roomCreation
      * @return
      */
-    public MAPIResponse createRoom(String practitionerMatrixUserID, MRoomCreation roomCreation){
-        MAPIResponse response = new MAPIResponse();
+    public SynapseRoom createRoom(String matrixUserID, MRoomCreation roomCreation){
+        getLogger().debug(".createSpace(): Entry, matrixUserID->{}, roomCreation->{}", matrixUserID, roomCreation);
+        MatrixQuery query = new MatrixQuery();
 
-        return(response);
+        //
+        // Create the Query
+        query.setHttpPath("_matrix/client/r0/createRoom");
+        query.setHttpMethod(HttpMethod.POST.name());
+
+        try {
+            String roomCreationAsString = jsonMapper.writeValueAsString(roomCreation);
+            query.setBody(roomCreationAsString);
+        } catch (JsonProcessingException e) {
+            getLogger().error(".createSpace(): Error, could convert MRoomCreation to String, stack->{}", ExceptionUtils.getStackTrace(e));
+        }
+
+        MAPIResponse mapiResponse = matrixAdminAPI.executeSpaceAction(query);
+
+        MCreationContentResponse response = new MCreationContentResponse();
+        if(mapiResponse.getResponseCode() == 200){
+            JSONObject responseObject = new JSONObject(mapiResponse.getResponseContent());
+            String roomId = responseObject.getString("room_id");
+            String roomAlias = responseObject.getString("room_alias");
+            response.setRoomId(roomId);
+            response.setRoomAlias(roomAlias);
+        }
+
+        SynapseRoom synapseRoom = synapseRoomAPI.getRoomDetail(response.getRoomId());
+
+        getLogger().debug(".createSpace(): Response to creation synapseRoom->{}",synapseRoom);
+        return(synapseRoom);
     }
 
     /**
@@ -191,5 +261,13 @@ public class MatrixRoomMethods {
 
     public boolean doesRoomExistForUser(String practitionerMatrixUserID, String roomName){
         return(false);
+    }
+
+    //
+    // Getters and Setters
+    //
+
+    protected Logger getLogger(){
+        return(LOG);
     }
 }
