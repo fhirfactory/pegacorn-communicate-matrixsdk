@@ -87,7 +87,7 @@ public class SynapseRoomMethods {
 
         //
         // Create the Query
-        query.setHttpPath("/_synapse/admin/v1/rooms?limit=5000");
+        query.setHttpPath("/_synapse/admin/v1/rooms?limit=10000");
         query.setHttpMethod(HttpMethod.GET.name());
 
         SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);

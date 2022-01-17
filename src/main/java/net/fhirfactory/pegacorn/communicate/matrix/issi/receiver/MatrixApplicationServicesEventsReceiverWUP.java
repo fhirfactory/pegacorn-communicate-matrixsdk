@@ -28,13 +28,12 @@ import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingM
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixMessageSplitter;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixEventNotFoundException;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixUpdateException;
-import net.fhirfactory.pegacorn.core.interfaces.topology.PetasosEndpointContainerInterface;
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPServerAdapter;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
-import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractIngresAPIClientGatewayWUP;
+import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractIngresMessagingGatewayWUP;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
@@ -43,7 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 
-public abstract class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresAPIClientGatewayWUP {
+public abstract class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMessagingGatewayWUP {
 
     private static String INGRES_GATEWAY_COMPONENT = "netty-http";
             
@@ -98,7 +97,7 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
 
 
     @Override
-    protected PetasosEndpointContainerInterface specifyIngresEndpoint() {
+    protected MessageBasedWUPEndpointContainer specifyIngresEndpoint() {
         getLogger().debug(".specifyIngresTopologyEndpoint(): Entry");
         MessageBasedWUPEndpointContainer ingresEndpoint = new MessageBasedWUPEndpointContainer();
         ingresEndpoint.setFrameworkEnabled(false);

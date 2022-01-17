@@ -167,4 +167,26 @@ public class MRoomCreation implements Serializable {
     public void setPowerLevelContentOverride(MRoomPowerLevelsContentType powerLevelContentOverride) {
         this.powerLevelContentOverride = powerLevelContentOverride;
     }
+
+    //
+    // To String
+    //
+
+    @Override
+    public String toString() {
+        return "MRoomCreation{" +
+                "visibility='" + visibility + '\'' +
+                ", roomAliasName='" + roomAliasName + '\'' +
+                ", name='" + name + '\'' +
+                ", topic='" + topic + '\'' +
+                ", invite=" + invite +
+                ", invite3PID=" + invite3PID +
+                ", roomVersion='" + roomVersion + '\'' +
+                ", creationContent=" + creationContent +
+                ", initialState=" + initialState +
+                ", preset='" + preset + '\'' +
+                ", direct=" + direct +
+                ", powerLevelContentOverride=" + powerLevelContentOverride +
+                '}';
+    }
 }
