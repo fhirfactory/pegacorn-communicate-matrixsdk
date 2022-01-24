@@ -49,14 +49,14 @@ public class SynapseAccessTokenExtractorBean {
     //
 
     public String extractAndSetToken(String httpResponseBody){
-        getLogger().info(".extractAndSetToken(): Entry, httpResponseBody->{}", httpResponseBody);
+        getLogger().debug(".extractAndSetToken(): Entry, httpResponseBody->{}", httpResponseBody);
 
         JSONObject loginResponse = new JSONObject(httpResponseBody);
         String access_token = loginResponse.getString("access_token");
         getSynapseAccessToken().setRemoteAccessToken(access_token);
-        getLogger().info(".extractAndSetToken(): Exit, access_token->{}",access_token);
-        getLogger().info(".extractAndSetToken(): Exit, getSynapseAccessToken().getRemoteAccessToken()->{}",getSynapseAccessToken().getRemoteAccessToken());
-        getLogger().info(".extractAndSetToken(): Exit");
+        getLogger().debug(".extractAndSetToken(): Exit, access_token->{}",access_token);
+        getLogger().debug(".extractAndSetToken(): Exit, getSynapseAccessToken().getRemoteAccessToken()->{}",getSynapseAccessToken().getRemoteAccessToken());
+        getLogger().debug(".extractAndSetToken(): Exit");
         return(access_token);
     }
 

@@ -56,7 +56,7 @@ public class SynapseQueryProcessingBean {
     //
 
     public String createRequest(SynapseQuery synapseQuery, Exchange camelExchange){
-        getLogger().info(".createRequest(): Entry, synapseQuery->{}", synapseQuery);
+        getLogger().debug(".createRequest(): Entry, synapseQuery->{}", synapseQuery);
 
         String body = synapseQuery.getBody();
 
@@ -73,7 +73,7 @@ public class SynapseQueryProcessingBean {
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
         camelExchange.getIn().setHeader("Authorization", "Bearer " + getSynapseAccessToken().getRemoteAccessToken());
 
-        getLogger().info(".createRequest(): Exit, body->{}", body);
+        getLogger().debug(".createRequest(): Exit, body->{}", body);
         return(body);
     }
 

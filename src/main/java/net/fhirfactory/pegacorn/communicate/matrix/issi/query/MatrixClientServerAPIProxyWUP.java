@@ -23,6 +23,7 @@ package net.fhirfactory.pegacorn.communicate.matrix.issi.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPClientTopologyEndpoint;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.issi.matrix.MatrixAPIClientEndpoint;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixQueryProcessingBean;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixResponseProcessingBean;
@@ -30,7 +31,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.methods.common.MatrixQuery;
 import net.fhirfactory.pegacorn.communicate.matrix.model.interfaces.MatrixAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
+import net.fhirfactory.pegacorn.core.interfaces.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
@@ -122,7 +123,7 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
     @Override
     protected MessageBasedWUPEndpointContainer specifyEgressEndpoint() {
         MessageBasedWUPEndpointContainer endpoint = new MessageBasedWUPEndpointContainer();
-        MatrixAPIClientEndpoint clientTopologyEndpoint = (MatrixAPIClientEndpoint) getTopologyEndpoint(specifyEgressTopologyEndpointName());
+        HTTPClientTopologyEndpoint clientTopologyEndpoint = (HTTPClientTopologyEndpoint) getTopologyEndpoint(specifyEgressTopologyEndpointName());
         ConnectedExternalSystemTopologyNode targetSystem = clientTopologyEndpoint.getTargetSystem();
         HTTPClientAdapter httpClient = (HTTPClientAdapter) targetSystem.getTargetPorts().get(0);
         this.portValue = httpClient.getPortNumber();

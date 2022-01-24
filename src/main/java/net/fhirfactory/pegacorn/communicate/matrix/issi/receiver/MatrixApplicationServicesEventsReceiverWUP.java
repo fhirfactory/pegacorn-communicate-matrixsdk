@@ -22,6 +22,7 @@
 
 package net.fhirfactory.pegacorn.communicate.matrix.issi.receiver;
 
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPServerTopologyEndpoint;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.issi.matrix.MatrixEventReceiverEndpoint;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixEventSet2UoW;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixEventSetValidator;
@@ -101,7 +102,7 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         getLogger().debug(".specifyIngresTopologyEndpoint(): Entry");
         MessageBasedWUPEndpointContainer ingresEndpoint = new MessageBasedWUPEndpointContainer();
         ingresEndpoint.setFrameworkEnabled(false);
-        MatrixEventReceiverEndpoint myMatrixServerAPIServicesGW = (MatrixEventReceiverEndpoint)getTopologyEndpoint(specifyIngresTopologyEndpointName());
+        HTTPServerTopologyEndpoint myMatrixServerAPIServicesGW = (HTTPServerTopologyEndpoint)getTopologyEndpoint(specifyIngresTopologyEndpointName());
         if (myMatrixServerAPIServicesGW == null) {
             getLogger().error(".specifyIngresTopologyEndpoint(): Unable to derive endpoint for Matrix Application Services API  Server");
             return (ingresEndpoint);
@@ -163,6 +164,6 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
 
     @Override
     protected String specifyIngresEndpointVersion() {
-        return null;
+        return "1.0.0s";
     }
 }

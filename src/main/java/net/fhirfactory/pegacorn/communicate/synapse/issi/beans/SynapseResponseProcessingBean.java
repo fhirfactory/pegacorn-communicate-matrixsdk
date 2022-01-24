@@ -50,17 +50,17 @@ public class SynapseResponseProcessingBean {
     //
 
     public SynapseAPIResponse processResponse(String httpResponseBody, Exchange camelExchange){
-        getLogger().info(".processResponse(): Entry, httpResponseBody->{}", httpResponseBody);
+        getLogger().debug(".processResponse(): Entry, httpResponseBody->{}", httpResponseBody);
 
         SynapseAPIResponse response = new SynapseAPIResponse();
 
         response.setResponseContent(httpResponseBody);
 
         int responseCode = (int)camelExchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE);
-        getLogger().info(".processResponse(): Entry, responseCode->{}", responseCode);
+        getLogger().debug(".processResponse(): Entry, responseCode->{}", responseCode);
         response.setResponseCode(responseCode);
 
-        getLogger().info(".processResponse(): Exit, response->{}", response);
+        getLogger().debug(".processResponse(): Exit, response->{}", response);
         return(response);
     }
 

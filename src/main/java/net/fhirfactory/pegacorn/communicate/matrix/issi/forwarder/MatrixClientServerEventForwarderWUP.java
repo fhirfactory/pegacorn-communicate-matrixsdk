@@ -29,11 +29,12 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.interfaces.MatrixEventF
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.common.MatrixEventBase;
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
+import net.fhirfactory.pegacorn.core.interfaces.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPClientAdapter;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPClientTopologyEndpoint;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.issi.matrix.MatrixAPIClientEndpoint;
 import net.fhirfactory.pegacorn.core.model.topology.nodes.external.ConnectedExternalSystemTopologyNode;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
@@ -138,7 +139,7 @@ public abstract class MatrixClientServerEventForwarderWUP extends InteractEgress
     @Override
     protected MessageBasedWUPEndpointContainer specifyEgressEndpoint() {
         MessageBasedWUPEndpointContainer endpoint = new MessageBasedWUPEndpointContainer();
-        MatrixAPIClientEndpoint clientTopologyEndpoint = (MatrixAPIClientEndpoint) getTopologyEndpoint(specifyEgressTopologyEndpointName());
+        HTTPClientTopologyEndpoint clientTopologyEndpoint = (HTTPClientTopologyEndpoint) getTopologyEndpoint(specifyEgressTopologyEndpointName());
         ConnectedExternalSystemTopologyNode targetSystem = clientTopologyEndpoint.getTargetSystem();
         HTTPClientAdapter httpClient = (HTTPClientAdapter) targetSystem.getTargetPorts().get(0);
         this.portValue = httpClient.getPortNumber();
