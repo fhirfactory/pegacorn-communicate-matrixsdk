@@ -36,7 +36,7 @@ public class MatrixAccessToken extends APIAccessToken {
 
     public MatrixAccessToken(){
         super();
-        matrixUserId = "@replicabridge:aether-itops-replica-server.local";
+        matrixUserId = "@" + getUserName() + ":aether-itops-replica-server.local";
     }
 
     //
