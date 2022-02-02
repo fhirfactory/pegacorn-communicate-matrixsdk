@@ -36,7 +36,8 @@ public class MatrixAccessToken extends APIAccessToken {
 
     public MatrixAccessToken(){
         super();
-        matrixUserId = "@" + getUserName() + ":aether-itops-replica-server.local";
+        // TODO - retrieve server name from external configuration.
+        matrixUserId = "@" + getUserName() + ":itops.test.gov.au";
     }
 
     //

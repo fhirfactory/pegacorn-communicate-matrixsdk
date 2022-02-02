@@ -128,7 +128,8 @@ public class MatrixSpaceMethods {
 
         JSONObject bodyObject = new JSONObject();
         JSONArray viaObject = new JSONArray();
-        viaObject.put("aether-itops-replica-server.local");
+        // TODO - retrieve server name from external configuration.
+        viaObject.put("itops.test.gov.au");
         bodyObject.put("via", viaObject);
         bodyObject.put("suggested", false);
         bodyObject.put("auto_join", true);
