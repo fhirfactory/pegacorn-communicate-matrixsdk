@@ -42,6 +42,7 @@ public abstract class APIAccessToken implements Serializable {
     private Instant lastAccessTime;
     private Object accessLock;
     private String userPassword;
+    private String homeServer;
 
     private boolean initialised;
 
@@ -63,6 +64,7 @@ public abstract class APIAccessToken implements Serializable {
         this.sessionAccessToken = null;
         this.initialised = false;
         this.userId = null;
+        this.homeServer = null;
     }
 
 
@@ -93,6 +95,14 @@ public abstract class APIAccessToken implements Serializable {
     // Getters and Setters
     //
 
+
+    public String getHomeServer() {
+        return homeServer;
+    }
+
+    public void setHomeServer(String homeServer) {
+        this.homeServer = homeServer;
+    }
 
     public String getUserId() {
         return userId;
@@ -195,6 +205,7 @@ public abstract class APIAccessToken implements Serializable {
                 ", lastAccessTime=" + lastAccessTime +
                 ", accessLock=" + accessLock +
                 ", userPassword='" + userPassword + '\'' +
+                ", homeServer='" + homeServer + '\'' +
                 ", initialised=" + initialised +
                 ", environmentProperties=" + environmentProperties +
                 '}';

@@ -130,8 +130,10 @@ public class MatrixApplicationServiceMethods {
             JSONObject responseObject = new JSONObject(mapiResponse.getResponseContent());
             String sessionToken = responseObject.getString("access_token");
             String userId = responseObject.getString("user_id");
+            String homeServer = responseObject.getString("home_server");
             matrixAccessToken.setUserId(userId);
             matrixAccessToken.setSessionAccessToken(sessionToken);
+            matrixAccessToken.setHomeServer(homeServer);
         }
         getLogger().debug(".loginApplicationService(): Exit, response->{}", mapiResponse);
         return(mapiResponse);
