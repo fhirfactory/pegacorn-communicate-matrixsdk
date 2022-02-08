@@ -23,6 +23,7 @@ package net.fhirfactory.pegacorn.communicate.synapse.credentials;
 
 import net.fhirfactory.pegacorn.communicate.common.APIAccessToken;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
 

@@ -23,7 +23,9 @@ package net.fhirfactory.pegacorn.communicate.synapse.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SynapseRoom {
+import java.io.Serializable;
+
+public class SynapseRoom implements Serializable {
     private String roomID;
     private String name;
     private String avatar;
@@ -41,6 +43,68 @@ public class SynapseRoom {
     private String historyVisibility;
     private int stateEventsCount;
     private int joinedLocalDevices;
+
+    //
+    // Constructor(s)
+    //
+
+    public SynapseRoom(){
+        this.roomID = null;
+        this.name = null;
+        this.avatar = null;
+        this.topic = null;
+        this.canonicalAlias = null;
+        this.joinedMembers = 0;
+        this.joinedLocalMembers = 0;
+        this.joinedLocalDevices = 0;
+        this.version = null;
+        this.creator = null;
+        this.encryption = null;
+        this.federatable = false;
+        this.publicRoom = false;
+        this.joinRules = null;
+        this.guestAccess = null;
+        this.historyVisibility = null;
+        this.stateEventsCount = 0;
+    }
+
+    public SynapseRoom(SynapseRoom ori){
+        this.roomID = null;
+        this.name = null;
+        this.avatar = null;
+        this.topic = null;
+        this.canonicalAlias = null;
+        this.joinedMembers = 0;
+        this.joinedLocalMembers = 0;
+        this.joinedLocalDevices = 0;
+        this.version = null;
+        this.creator = null;
+        this.encryption = null;
+        this.federatable = false;
+        this.publicRoom = false;
+        this.joinRules = null;
+        this.guestAccess = null;
+        this.historyVisibility = null;
+        this.stateEventsCount = 0;
+
+
+        setRoomID(ori.getRoomID());
+        setName(ori.getName());
+        setAvatar(ori.getAvatar());
+        setTopic(ori.getTopic());
+        setCanonicalAlias(ori.getCanonicalAlias());
+        setJoinedMembers(ori.getJoinedMembers());
+        setJoinedLocalMembers(ori.getJoinedLocalMembers());
+        setJoinedLocalDevices(ori.getJoinedLocalDevices());
+        setVersion(ori.getVersion());
+        setCreator(ori.getCreator());
+        setFederatable(ori.isFederatable());
+        setPublicRoom(ori.isPublicRoom());
+        setJoinRules(ori.getJoinRules());
+        setGuestAccess(ori.getGuestAccess());
+        setHistoryVisibility(ori.getHistoryVisibility());
+        setStateEventsCount(ori.getStateEventsCount());
+    }
 
     //
     // Getters and Setters

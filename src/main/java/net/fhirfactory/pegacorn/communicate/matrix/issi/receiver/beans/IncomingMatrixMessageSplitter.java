@@ -46,7 +46,7 @@ public class IncomingMatrixMessageSplitter {
         String processingOutcomeFailureReason = null;
         for (Integer counter = 0; counter < localMessageEvents.length(); counter += 1) {
             JSONObject eventInstance = localMessageEvents.getJSONObject(counter);
-            LOG.info("splitMessageIntoEvents(): Extracted JSONObject --> " + eventInstance.toString(2));
+            LOG.debug("splitMessageIntoEvents(): Extracted JSONObject --> " + eventInstance.toString(2));
             if (eventInstance.has("type")) {
                 String messageType = eventInstance.getString("type");
                 MEventTypeEnum parcelType = MEventTypeEnum.fromString(messageType);
@@ -77,7 +77,7 @@ public class IncomingMatrixMessageSplitter {
                 if(LOG.isTraceEnabled()){
                     LOG.trace("splitMessageIntoEvents(): Added another payload to payloadSet, count --> " + incomingUoW.getEgressContent().getPayloadElements().size());
                 }
-            }            
+            }
         }
         if(processingIsSuccessful) {
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);

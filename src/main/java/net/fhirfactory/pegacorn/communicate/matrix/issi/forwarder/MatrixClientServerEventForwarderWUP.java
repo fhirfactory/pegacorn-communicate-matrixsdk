@@ -174,8 +174,9 @@ public abstract class MatrixClientServerEventForwarderWUP extends InteractEgress
         from(getMatrixRoomEventForwarderEndpoint())
                 .routeId(getMatrixRoomEventForwarderEndpoint())
                 .bean(eventPreparationTool, "createRequest")
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
+                .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .bean(responsePostProcessor, "processResponse");
 
     }

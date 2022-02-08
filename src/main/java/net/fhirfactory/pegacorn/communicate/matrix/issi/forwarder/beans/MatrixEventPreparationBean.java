@@ -69,7 +69,7 @@ public class MatrixEventPreparationBean {
     //
 
     public String createRequest(MatrixEventBase matrixEvent, Exchange camelExchange){
-        getLogger().info(".createRequest(): Entry, matrixEvent->{}", matrixEvent);
+        getLogger().debug(".createRequest(): Entry, matrixEvent->{}", matrixEvent);
 
         //
         // These are the values we have to populate
@@ -86,16 +86,16 @@ public class MatrixEventPreparationBean {
         String eventId = matrixEvent.getEventIdentifier();
         String userId = null;
         if(StringUtils.isEmpty(matrixEvent.getSender())){
-            userId = "@"+ matrixAccessToken.getMatrixUserId().toLowerCase(Locale.ROOT)+":" + localServerName.getServerName();
+            userId = matrixAccessToken.getUserId();
         } else {
-            userId = "@"+ matrixEvent.getSender().toLowerCase(Locale.ROOT)+":" + localServerName.getServerName();
+            userId = matrixEvent.getSender();
         }
         queryPath = MATRIX_API_SUBPATH+"/rooms/"+roomId+"/send/m.room.message/"+eventId+"?user_id="+userId+"&throwExceptionOnFailure=false";
         //
         // Again, Assume Good
         switch(mEventTypeEnum){
             case M_ROOM_MESSAGE:
-                getLogger().info(".createRequest(): Is a MRoomMessage");
+                getLogger().debug(".createRequest(): Is a MRoomMessage");
                 method = HttpMethod.PUT;
                 if(matrixEvent instanceof MRoomTextMessageEvent) {
                     MRoomTextMessageEvent textMessageEvent = SerializationUtils.clone((MRoomTextMessageEvent) matrixEvent);
@@ -120,7 +120,7 @@ public class MatrixEventPreparationBean {
         camelExchange.getIn().setHeader(Exchange.HTTP_PATH, queryPath);
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
         camelExchange.getIn().setHeader("Authorization", "Bearer " + getMatrixAccessToken().getRemoteAccessToken());
-        getLogger().info(".createRequest(): Exit, body->{}", body);
+        getLogger().debug(".createRequest(): Exit, body->{}", body);
         return(body);
     }
 

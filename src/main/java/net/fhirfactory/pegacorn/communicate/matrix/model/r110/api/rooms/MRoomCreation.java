@@ -48,6 +48,29 @@ public class MRoomCreation implements Serializable {
     private boolean direct;
     private MRoomPowerLevelsContentType powerLevelContentOverride;
 
+    //
+    // Constructor(s)
+    //
+
+    public MRoomCreation(){
+        this.visibility = null;
+        this.roomAliasName = null;
+        this.name = null;
+        this.topic = null;
+        this.invite = new ArrayList<>();
+        this.invite3PID = new ArrayList<>();
+        this.roomVersion = null;
+        this.creationContent = null;
+        this.initialState = new ArrayList<>();
+        this.preset = null;
+        this.direct = false;
+        this.powerLevelContentOverride = null;
+    }
+
+    //
+    // Getters and Setters
+    //
+
     @JsonProperty("visibility")
     public String getVisibility() {
         return visibility;

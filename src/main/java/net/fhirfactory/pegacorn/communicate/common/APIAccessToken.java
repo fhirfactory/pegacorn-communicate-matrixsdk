@@ -22,8 +22,12 @@
 package net.fhirfactory.pegacorn.communicate.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
+import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -31,16 +35,23 @@ import java.util.Objects;
 
 public abstract class APIAccessToken implements Serializable {
     private String userName;
+    private String userId;
     private String remoteAccessToken;
     private String localAccessToken;
+    private String sessionAccessToken;
     private Instant lastAccessTime;
     private Object accessLock;
     private String userPassword;
+
+    private boolean initialised;
 
     public static String SYNAPSE_ADMIN_USER_PASSWORD_PROPERTY = "SYNAPSE_ADMIN_USER_PASSWORD";
     public static String SYNAPSE_ACCESS_TOKEN_PROPERTY = "SYNAPSE_ACCESS_TOKEN";
     public static String SYNAPSE_ADMIN_USER_NAME_PROPERTY = "SYNAPSE_ADMIN_USER_NAME";
     public static String MATRIX_BRIDGE_TOKEN_PROPERTY = "MATRIX_BRIDGE_ACCESS_TOKEN";
+
+    @Inject
+    private PegacornEnvironmentProperties environmentProperties;
 
     //
     // Constructor(s)
@@ -49,11 +60,55 @@ public abstract class APIAccessToken implements Serializable {
     public APIAccessToken(){
         this.accessLock = new Object();
         this.lastAccessTime = Instant.now();
+        this.sessionAccessToken = null;
+        this.initialised = false;
+        this.userId = null;
+    }
+
+
+    //
+    // Post Construct
+    //
+    @PostConstruct
+    public void initialise(){
+        if(initialised){
+            // do nothing
+        } else {
+            // Get the AccessToken and assign it
+            String synapseAdminUserName = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ADMIN_USER_NAME_PROPERTY);
+            String synapseAdminUserPassword = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ADMIN_USER_PASSWORD_PROPERTY);
+            String synapseAccessToken  = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ACCESS_TOKEN_PROPERTY);
+
+            if(StringUtils.isBlank(synapseAdminUserName) || StringUtils.isBlank(synapseAdminUserPassword)){
+                throw(new RuntimeException("SynapseAdminUserName or SynapseAdminUserPassword is blank"));
+            }
+
+            setRemoteAccessToken(synapseAccessToken);
+            setUserName(synapseAdminUserName);
+            setUserPassword(synapseAdminUserPassword);
+        }
     }
 
     //
     // Getters and Setters
     //
+
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getSessionAccessToken() {
+        return sessionAccessToken;
+    }
+
+    public void setSessionAccessToken(String sessionAccessToken) {
+        this.sessionAccessToken = sessionAccessToken;
+    }
 
     public String getUserPassword() {
         return userPassword;
@@ -108,26 +163,40 @@ public abstract class APIAccessToken implements Serializable {
         this.accessLock = accessLock;
     }
 
+    //
+    // Equals and Hashcode
+    //
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof APIAccessToken)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         APIAccessToken that = (APIAccessToken) o;
-        return Objects.equals(getRemoteAccessToken(), that.getRemoteAccessToken()) && Objects.equals(getLocalAccessToken(), that.getLocalAccessToken()) && Objects.equals(getLastAccessTime(), that.getLastAccessTime()) && Objects.equals(getAccessLock(), that.getAccessLock());
+        return Objects.equals(getUserName(), that.getUserName()) && Objects.equals(getRemoteAccessToken(), that.getRemoteAccessToken()) && Objects.equals(getLocalAccessToken(), that.getLocalAccessToken()) && Objects.equals(getSessionAccessToken(), that.getSessionAccessToken()) && Objects.equals(getLastAccessTime(), that.getLastAccessTime()) && Objects.equals(getAccessLock(), that.getAccessLock()) && Objects.equals(getUserPassword(), that.getUserPassword());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getRemoteAccessToken(), getLocalAccessToken(), getLastAccessTime(), getAccessLock());
+        return Objects.hash(getUserName(), getRemoteAccessToken(), getLocalAccessToken(), getSessionAccessToken(), getLastAccessTime(), getAccessLock(), getUserPassword());
     }
+
+    //
+    // To String
+    //
 
     @Override
     public String toString() {
         return "APIAccessToken{" +
-                "remoteAccessToken='" + remoteAccessToken + '\'' +
+                "userName='" + userName + '\'' +
+                ", userId='" + userId + '\'' +
+                ", remoteAccessToken='" + remoteAccessToken + '\'' +
                 ", localAccessToken='" + localAccessToken + '\'' +
+                ", sessionAccessToken='" + sessionAccessToken + '\'' +
                 ", lastAccessTime=" + lastAccessTime +
                 ", accessLock=" + accessLock +
+                ", userPassword='" + userPassword + '\'' +
+                ", initialised=" + initialised +
+                ", environmentProperties=" + environmentProperties +
                 '}';
     }
 }

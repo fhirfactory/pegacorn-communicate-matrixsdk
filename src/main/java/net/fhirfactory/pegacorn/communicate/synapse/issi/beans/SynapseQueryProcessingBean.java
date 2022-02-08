@@ -71,7 +71,7 @@ public class SynapseQueryProcessingBean {
         camelExchange.getIn().setHeader(Exchange.HTTP_METHOD, synapseQuery.getHttpMethod());
         camelExchange.getIn().setHeader(Exchange.HTTP_PATH, queryPath);
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
-        camelExchange.getIn().setHeader("Authorization", "Bearer " + getSynapseAccessToken().getRemoteAccessToken());
+        camelExchange.getIn().setHeader("Authorization", "Bearer " + getSynapseAccessToken().getSessionAccessToken());
 
         getLogger().debug(".createRequest(): Exit, body->{}", body);
         return(body);

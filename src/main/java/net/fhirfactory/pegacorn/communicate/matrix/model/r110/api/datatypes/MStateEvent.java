@@ -32,6 +32,20 @@ public class MStateEvent implements Serializable {
     private String stateKey;
     private Object content;
 
+    //
+    // Constructor(s)
+    //
+
+    public MStateEvent(){
+        this.type = null;
+        this.stateKey = null;
+        this.content = null;
+    }
+
+    //
+    // Getters and Setters
+    //
+
     @JsonProperty("type")
     public String getType() {
         return type;
@@ -60,5 +74,18 @@ public class MStateEvent implements Serializable {
     @JsonProperty("content")
     public void setContent(Object content) {
         this.content = content;
+    }
+
+    //
+    // to String
+    //
+
+    @Override
+    public String toString() {
+        return "MStateEvent{" +
+                "type='" + type + '\'' +
+                ", stateKey='" + stateKey + '\'' +
+                ", content=" + content +
+                '}';
     }
 }

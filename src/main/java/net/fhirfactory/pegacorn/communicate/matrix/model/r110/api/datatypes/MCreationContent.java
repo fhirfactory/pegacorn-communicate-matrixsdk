@@ -31,6 +31,19 @@ public class MCreationContent implements Serializable {
     private boolean federate;
     private String type;
 
+    //
+    // Constructor(s)
+    //
+
+    public MCreationContent(){
+        this.federate = false;
+        this.type = null;
+    }
+
+    //
+    // Getters and Setters
+    //
+
     @JsonProperty("m.federate")
     public boolean isFederate() {
         return federate;
@@ -49,5 +62,17 @@ public class MCreationContent implements Serializable {
     @JsonProperty("type")
     public void setType(String type) {
         this.type = type;
+    }
+
+    //
+    // To String
+    //
+
+    @Override
+    public String toString() {
+        return "MCreationContent{" +
+                "federate=" + federate +
+                ", type='" + type + '\'' +
+                '}';
     }
 }

@@ -27,6 +27,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIRes
 import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery;
 
 public interface MatrixAdminProxyInterface {
+    public MAPIResponse executeApplicationServicesAction(MatrixQuery matrixQuery);
     public MAPIResponse executeRoomAction(MatrixQuery matrixQuery);
     public MAPIResponse executeUserAction(MatrixQuery matrixQuery);
     public MAPIResponse executeSpaceAction(MatrixQuery matrixQuery);

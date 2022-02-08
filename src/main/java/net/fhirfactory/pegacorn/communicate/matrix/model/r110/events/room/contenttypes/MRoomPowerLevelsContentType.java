@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -39,6 +40,27 @@ public class MRoomPowerLevelsContentType implements Serializable {
     private int userDefaultPowerLevel;
     private Map<String, Integer> notificationPowerLevels;
     private int stateDefault;
+
+    //
+    // Constructor(s)
+    //
+
+    public MRoomPowerLevelsContentType(){
+        this.ban = 0;
+        this.eventPowerLevels = new HashMap<>();
+        this.eventDefaultPowerLevel = 0;
+        this.invite = 0;
+        this.kick = 0;
+        this.redact = 0;
+        this.userPowerLevels = new HashMap<>();
+        this.userDefaultPowerLevel = 0;
+        this.notificationPowerLevels = new HashMap<>();
+        this.stateDefault = 0;
+    }
+
+    //
+    // Getters and Setters
+    //
 
     @JsonProperty("state_default")
     public int getStateDefault() {

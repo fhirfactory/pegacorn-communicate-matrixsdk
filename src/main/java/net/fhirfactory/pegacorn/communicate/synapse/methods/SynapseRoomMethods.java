@@ -33,6 +33,7 @@ import javassist.compiler.ast.Symbol;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
@@ -85,16 +86,31 @@ public class SynapseRoomMethods {
 
         SynapseQuery query = new SynapseQuery();
 
+        if(StringUtils.isEmpty(searchTerm)){
+            searchTerm = "*";
+        }
+
         //
         // Create the Query
-        query.setHttpPath("/_synapse/admin/v1/rooms?limit=10000");
+        if(searchTerm.equals("*")){
+            query.setHttpPath("/_synapse/admin/v1/rooms?limit=10000");
+        } else {
+            query.setHttpPath("/_synapse/admin/v1/rooms?search_term="+searchTerm+"&limit=10000");
+        }
         query.setHttpMethod(HttpMethod.GET.name());
 
-        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+        List<SynapseRoom> roomSet = new ArrayList<>();
+
+        SynapseAPIResponse response = null;
+        try{
+            response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+        } catch( Exception ex){
+            getLogger().warn(".getRooms(): Error, message->{}", ExceptionUtils.getMessage(ex));
+            return(roomSet);
+        }
 
         getLogger().debug(".getRooms(): response->{}", response);
 
-        List<SynapseRoom> roomSet = new ArrayList<>();
         if(response.getResponseCode() != 200){
             getLogger().debug("getRooms(): Exit, something went wrong, returning empty list");
             return(roomSet);
@@ -103,9 +119,9 @@ public class SynapseRoomMethods {
         //
         // Extract the Rooms
         JSONObject localMessageObject = new JSONObject(response.getResponseContent());
-        LOG.trace("getRooms(): Converted to JSONObject --> " + localMessageObject.toString());
+        LOG.info("getRooms(): Converted to JSONObject --> " + localMessageObject.toString());
         JSONArray localMessageEvents = localMessageObject.getJSONArray("rooms");
-        LOG.trace("getRooms(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
+        LOG.info("getRooms(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
         boolean processingIsSuccessful = true;
 
         String rawRoomSet = localMessageEvents.toString();
@@ -115,9 +131,9 @@ public class SynapseRoomMethods {
             getLogger().error(".getRooms(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
         }
 
-        getLogger().debug(".getRooms(): Retrieved Room Count->{}", roomSet.size());
+        getLogger().info(".getRooms(): Retrieved Room Count->{}", roomSet.size());
 
-        getLogger().debug(".getRooms(): Entry, roomSet->{}", roomSet);
+        getLogger().info(".getRooms(): Exit, roomSet->{}", roomSet);
         return(roomSet);
     }
 
@@ -170,12 +186,39 @@ public class SynapseRoomMethods {
      * @param roomID
      * @return
      */
-    public SynapseAPIResponse getRoomMembers(String roomID){
-        SynapseAPIResponse taskResponse = new SynapseAPIResponse();
+    public List<String> getRoomMembers(String roomID){
+        getLogger().debug(".getRoomMembers(): Entry, roomID->{}", roomID);
 
+        List<String> roomMemberList = new ArrayList<>();
+        if(StringUtils.isEmpty(roomID)){
+            return(roomMemberList);
+        }
 
+        SynapseQuery query = new SynapseQuery();
+        query.setHttpPath("/_synapse/admin/v1/rooms/"+roomID+"/members");
+        query.setHttpMethod(HttpMethod.GET.name());
 
-        return(taskResponse);
+        try {
+            SynapseAPIResponse response = (SynapseAPIResponse) camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+
+            if (response.getResponseCode() == 200) {
+                JSONObject responseObject = new JSONObject(response.getResponseContent());
+                JSONArray memberList = responseObject.getJSONArray("members");
+                if (memberList != null) {
+                    if (!memberList.isEmpty()) {
+                        int memberListSize = memberList.length();
+                        for(int memberListCounter = 0; memberListCounter < memberListSize; memberListCounter += 1){
+                            roomMemberList.add(memberList.getString(memberListCounter));
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex){
+            getLogger().warn(".getRoomMembers(): Unable to decode response, message->{}", ExceptionUtils.getMessage(ex));
+        }
+
+        getLogger().debug(".getRoomMembers(): Exit, roomMemberList->{}", roomMemberList);
+        return(roomMemberList);
     }
 
     public SynapseAPIResponse addRoomMember(String roomID, String memberId){
@@ -339,20 +382,13 @@ public class SynapseRoomMethods {
         return(roomList);
     }
 
+    @Deprecated
     public List<String> extractMembersFromRoom(String roomID){
         List<String> memberIDList = new ArrayList<>();
         if(StringUtils.isBlank(roomID)){
             return(memberIDList);
         }
-        SynapseAPIResponse response = getRoomMembers(roomID);
-        if(response.isSuccessful()){
-            String responseString = response.getResponseContent();
-            if(StringUtils.isNotBlank(responseString)){
-                JSONObject responseObject = new JSONObject(responseString);
-                JSONArray memberIDListArray = responseObject.getJSONArray("members");
-
-            }
-        }
+        memberIDList.addAll(getRoomMembers(roomID));
         return(memberIDList);
     }
 

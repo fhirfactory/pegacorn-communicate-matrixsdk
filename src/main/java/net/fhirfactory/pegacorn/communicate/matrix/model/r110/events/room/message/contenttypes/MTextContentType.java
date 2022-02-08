@@ -72,4 +72,18 @@ public class MTextContentType implements Serializable {
     public void setFormattedBody(String formatttedBody) {
         this.formattedBody = formatttedBody;
     }
+
+    //
+    // To String
+    //
+
+    @Override
+    public String toString() {
+        return "MTextContentType{" +
+                "messageType='" + messageType + '\'' +
+                ", body='" + body + '\'' +
+                ", format='" + format + '\'' +
+                ", formattedBody='" + formattedBody + '\'' +
+                '}';
+    }
 }

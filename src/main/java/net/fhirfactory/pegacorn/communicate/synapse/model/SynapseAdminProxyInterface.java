@@ -28,7 +28,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery
 public interface SynapseAdminProxyInterface {
     public SynapseAPIResponse executeRoomAction(SynapseQuery synapseQuery);
     public SynapseAPIResponse executeUserAction(SynapseQuery synapseQuery);
-    public String getSynapseLoginIngresEndpoint();
+    public String executeLogin();
     public String getSynapseRoomActionIngresEndpoint();
     public String getSynapseUserActionIngresEndpoint();
 }

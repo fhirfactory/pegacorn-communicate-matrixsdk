@@ -24,7 +24,6 @@ package net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.common.MatrixQuery;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +32,8 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 @Dependent
-public class MatrixQueryProcessingBean {
-    private static final Logger LOG = LoggerFactory.getLogger(MatrixQueryProcessingBean.class);
+public class MatrixApplicationServicesQueryProcessingBean {
+    private static final Logger LOG = LoggerFactory.getLogger(MatrixApplicationServicesQueryProcessingBean.class);
 
     private ObjectMapper jsonMapper;
 
@@ -45,7 +44,7 @@ public class MatrixQueryProcessingBean {
     // Constructor(s)
     //
 
-    public MatrixQueryProcessingBean(){
+    public MatrixApplicationServicesQueryProcessingBean(){
         this.jsonMapper = new ObjectMapper();
     }
 
@@ -69,7 +68,7 @@ public class MatrixQueryProcessingBean {
         }
         camelExchange.getIn().setHeader(Exchange.HTTP_PATH, queryPath);
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
-        camelExchange.getIn().setHeader("Authorization", "Bearer " + getMatrixAccessToken().getSessionAccessToken());
+        camelExchange.getIn().setHeader("Authorization", "Bearer " + getMatrixAccessToken().getRemoteAccessToken());
 
         getLogger().debug(".createRequest(): Exit, body->{}", body);
         return(body);

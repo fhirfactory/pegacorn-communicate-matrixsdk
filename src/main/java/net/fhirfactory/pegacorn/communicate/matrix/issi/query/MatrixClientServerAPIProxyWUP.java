@@ -23,6 +23,7 @@ package net.fhirfactory.pegacorn.communicate.matrix.issi.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
+import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixApplicationServicesQueryProcessingBean;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPClientTopologyEndpoint;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.issi.matrix.MatrixAPIClientEndpoint;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixQueryProcessingBean;
@@ -38,16 +39,19 @@ import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPClientAdapter;
 import net.fhirfactory.pegacorn.core.model.topology.nodes.external.ConnectedExternalSystemTopologyNode;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
+import net.fhirfactory.pegacorn.petasos.wup.helper.EgressActivityFinalisationRegistration;
 import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import net.fhirfactory.pegacorn.workshops.InterSubSystemIntegrationWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractEgressAPIClientGatewayWUP;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.model.OnExceptionDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import javax.inject.Inject;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +67,7 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
     private CloseableHttpClient synapseHTTPClient;
     private ObjectMapper jsonMapper;
 
+    private static String MATRIX_APPLICATION_SERVICES_INGRES_ENDPOINT = "direct:matrix-application-services-action";
     private static String MATRIX_ROOM_ACTION_INGRES_ENDPOINT = "direct:matrix-room-action";
     private static String MATRIX_SPACE_ACTION_INGRES_ENDPOINT = "direct:matrix-space-action";
     private static String MATRIX_USER_ACTION_INGRES_ENDPOINT = "direct:synapse-user-action";
@@ -81,6 +86,9 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
 
     @Inject
     private MatrixResponseProcessingBean responsePostProcessor;
+
+    @Inject
+    private MatrixApplicationServicesQueryProcessingBean applicationServicesQueryProcessor;
 
     @Inject
     private ProducerTemplate camelRouteInjector;
@@ -155,26 +163,50 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
     @Override
     public void configure() throws Exception {
 
+        getExceptionHandler();
+
+        from(getMatrixApplicationServicesIngresEndpoint())
+                .routeId(getMatrixApplicationServicesIngresEndpoint())
+                .bean(applicationServicesQueryProcessor, "createRequest")
+                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
+                .to("netty-http:" + getUriSpecification())
+                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .to("direct:httpTransactionResponse");
+
         from(getMatrixRoomActionIngresEndpoint())
                 .routeId(getMatrixRoomActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .bean(responsePostProcessor, "processResponse");
+                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .to("direct:httpTransactionResponse");
 
         from(getMatrixSpaceActionIngresEndpoint())
                 .routeId(getMatrixSpaceActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .bean(responsePostProcessor, "processResponse");
+                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .to("direct:httpTransactionResponse");
 
         from(getMatrixUserActionIngresEndpoint())
                 .routeId(getMatrixUserActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
+                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .to("direct:httpTransactionResponse");
+
+        from("direct:httpTransactionResponse")
                 .bean(responsePostProcessor, "processResponse");
+    }
+
+    @Override
+    public MAPIResponse executeApplicationServicesAction(MatrixQuery matrixQuery) {
+        getLogger().debug(".executeApplicationServicesAction(): Entry, matrixQuery->{}", matrixQuery);
+        MAPIResponse response = (MAPIResponse) camelRouteInjector.sendBody(getMatrixApplicationServicesIngresEndpoint(), ExchangePattern.InOut, matrixQuery);
+        getLogger().debug(".executeApplicationServicesAction(): Exit, response->{}", response);
+        return (response);
     }
 
     @Override
@@ -199,6 +231,18 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
         MAPIResponse response = (MAPIResponse) camelRouteInjector.sendBody(getMatrixSpaceActionIngresEndpoint(), ExchangePattern.InOut, matrixQuery);
         getLogger().debug(".executeUserAction(): Exit, response->{}", response);
         return (response);
+    }
+
+    //
+    // Exception Handling
+    //
+
+    protected OnExceptionDefinition getExceptionHandler(){
+        OnExceptionDefinition exceptionDef = onException(Exception.class)
+                .handled(true)
+                .log(LoggingLevel.ERROR, "Matrix API Proxy Exception: Headers -> ${headers}, body -> ${body}")
+                .to("direct:httpTransactionResponse");
+        return(exceptionDef);
     }
 
     //
@@ -275,6 +319,10 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
 
     public static String getMatrixUserActionIngresEndpoint() {
         return MATRIX_USER_ACTION_INGRES_ENDPOINT;
+    }
+
+    public static String getMatrixApplicationServicesIngresEndpoint() {
+        return MATRIX_APPLICATION_SERVICES_INGRES_ENDPOINT;
     }
 
     protected MatrixQueryProcessingBean getQueryPreProcessor() {

@@ -59,13 +59,12 @@ public class SynapseLoginMethodCreatorBean {
     //
 
     public String createRequest(String nothingString, Exchange camelExchange){
-        getLogger().info(".createRequest(): Entry, nothingString->{}", nothingString);
+        getLogger().debug(".createRequest(): Entry, nothingString->{}", nothingString);
 
         //
         // Create the Login Body
         MSimpleLogin loginRequest = new MSimpleLogin();
         loginRequest.setType("m.login.password");
-//        loginRequest.setUser(getSynapseAccessToken().getUserName());
         MUserIdentifierType userIdentifier = new MUserIdentifierType();
         userIdentifier.setType("m.id.user");
         userIdentifier.setUser(getSynapseAccessToken().getUserName());
@@ -85,7 +84,7 @@ public class SynapseLoginMethodCreatorBean {
         camelExchange.getIn().setHeader(Exchange.HTTP_PATH, MATRIX_API_SUBPATH + "/login");
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
 
-        getLogger().info(".createRequest(): Exit, loginRequestAsString->{}", loginRequestAsString);
+        getLogger().debug(".createRequest(): Exit, loginRequestAsString->{}", loginRequestAsString);
         return(loginRequestAsString);
     }
 

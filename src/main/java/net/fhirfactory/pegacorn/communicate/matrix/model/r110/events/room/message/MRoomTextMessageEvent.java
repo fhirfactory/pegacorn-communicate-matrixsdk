@@ -39,4 +39,22 @@ public class MRoomTextMessageEvent extends MatrixEventBase {
     public void setContent(MTextContentType content) {
         this.content = content;
     }
+
+    //
+    // To String
+    //
+
+    @Override
+    public String toString() {
+        return "MRoomTextMessageEvent{" +
+                "matrixEventFineGrainType='" + getMatrixEventFineGrainType() + '\'' +
+                ", unsigned=" + getUnsigned() +
+                ", sender='" + getSender() + '\'' +
+                ", eventType='" + getEventType() + '\'' +
+                ", timeStamp=" + getTimeStamp() +
+                ", eventIdentifier='" + getEventIdentifier() + '\'' +
+                ", roomIdentifier='" + getRoomIdentifier() + '\'' +
+                ", content=" + content +
+                '}';
+    }
 }

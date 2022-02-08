@@ -27,15 +27,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.netty.handler.codec.http.HttpMethod;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.common.MatrixQuery;
+import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.interfaces.MatrixAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MCreationContentResponse;
+import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MStateEvent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,28 +207,104 @@ public class MatrixRoomMethods {
         query.setHttpPath("_matrix/client/r0/createRoom");
         query.setHttpMethod(HttpMethod.POST.name());
 
+        JSONObject creationRequest = new JSONObject();
+        if(StringUtils.isNotEmpty(roomCreation.getVisibility())) {
+            creationRequest.put("visibility", roomCreation.getVisibility());
+        }
+        if(StringUtils.isNotEmpty(roomCreation.getRoomAliasName())){
+            creationRequest.put("room_alias_name", roomCreation.getRoomAliasName());
+        }
+        if(StringUtils.isNotEmpty(roomCreation.getName())){
+            creationRequest.put("name", roomCreation.getName());
+        }
+        if(StringUtils.isNotEmpty(roomCreation.getTopic())){
+            creationRequest.put("topic", roomCreation.getTopic());
+        }
+        if(!roomCreation.getInvite3PID().isEmpty()){
+            // TODO fix
+        }
+        if(StringUtils.isNotEmpty(roomCreation.getRoomVersion())){
+            creationRequest.put("room_version", roomCreation.getRoomVersion());
+        }
+        if(!roomCreation.getInitialState().isEmpty()){
+            JSONArray stateEventArray = new JSONArray();
+            int counter = 0;
+            for(MStateEvent currentStateEvent: roomCreation.getInitialState()){
+                JSONObject currentStateEventObject = new JSONObject();
+                if(StringUtils.isNotEmpty(currentStateEvent.getType())) {
+                    currentStateEventObject.put("type", currentStateEvent.getType());
+                }
+                if(StringUtils.isNotEmpty(currentStateEvent.getStateKey())){
+                    currentStateEventObject.put("state_key", currentStateEvent.getStateKey());
+                }
+                if(currentStateEvent.getContent() != null){
+                    if(currentStateEvent.getContent() instanceof JSONObject){
+                        JSONObject contentObject = (JSONObject) currentStateEvent.getContent();
+                        currentStateEventObject.put("content", contentObject);
+                    }
+                }
+                stateEventArray.put(counter, currentStateEventObject);
+                counter += 1;
+            }
+            creationRequest.put("initial_state", stateEventArray);
+        }
+        if(StringUtils.isNotEmpty(roomCreation.getPreset())){
+            creationRequest.put("preset", roomCreation.getPreset());
+        }
+        creationRequest.put("is_direct", roomCreation.isDirect());
+        if(roomCreation.getCreationContent() != null){
+            JSONObject creationContentObject = new JSONObject();
+            creationContentObject.put("m.federate", roomCreation.getCreationContent().isFederate());
+            if(StringUtils.isNotEmpty(roomCreation.getCreationContent().getType())){
+                creationContentObject.put("type", roomCreation.getCreationContent().getType());
+            }
+            creationRequest.put("creation_content", creationContentObject);
+        }
+        if(roomCreation.getPowerLevelContentOverride() != null){
+            JSONObject powerlevelOverrideObject = new JSONObject();
+            powerlevelOverrideObject.put("state_default", roomCreation.getPowerLevelContentOverride().getStateDefault());
+            powerlevelOverrideObject.put("ban", roomCreation.getPowerLevelContentOverride().getBan());
+            powerlevelOverrideObject.put("events_default", roomCreation.getPowerLevelContentOverride().getEventDefaultPowerLevel());
+            powerlevelOverrideObject.put("invite", roomCreation.getPowerLevelContentOverride().getInvite());
+            powerlevelOverrideObject.put("kick", roomCreation.getPowerLevelContentOverride().getKick());
+            powerlevelOverrideObject.put("redact", roomCreation.getPowerLevelContentOverride().getRedact());
+            powerlevelOverrideObject.put("users_default", roomCreation.getPowerLevelContentOverride().getUserDefaultPowerLevel());
+            // TODO fix the various array values
+            creationRequest.put("power_level_content_override", powerlevelOverrideObject);
+        }
+
+        /*
         try {
             String roomCreationAsString = jsonMapper.writeValueAsString(roomCreation);
             query.setBody(roomCreationAsString);
         } catch (JsonProcessingException e) {
             getLogger().error(".createSpace(): Error, could convert MRoomCreation to String, stack->{}", ExceptionUtils.getStackTrace(e));
         }
+         */
 
-        MAPIResponse mapiResponse = matrixAdminAPI.executeSpaceAction(query);
+        query.setBody(creationRequest.toString());
+
+        MAPIResponse mapiResponse = matrixAdminAPI.executeRoomAction(query);
 
         MCreationContentResponse response = new MCreationContentResponse();
-        if(mapiResponse.getResponseCode() == 200){
+        MatrixRoom matrixRoom = null;
+
+        if(mapiResponse.getResponseCode() == 200) {
             JSONObject responseObject = new JSONObject(mapiResponse.getResponseContent());
             String roomId = responseObject.getString("room_id");
             String roomAlias = responseObject.getString("room_alias");
             response.setRoomId(roomId);
             response.setRoomAlias(roomAlias);
+
+            SynapseRoom synapseRoom = synapseRoomAPI.getRoomDetail(response.getRoomId());
+
+            if (synapseRoom != null) {
+                matrixRoom = new MatrixRoom(synapseRoom);
+            }
         }
 
-        SynapseRoom synapseRoom = synapseRoomAPI.getRoomDetail(response.getRoomId());
-
-        getLogger().debug(".createSpace(): Response to creation synapseRoom->{}",synapseRoom);
-        return(synapseRoom);
+        getLogger().debug(".createSpace(): Response to creation matrixRoom->{}",matrixRoom);
+        return(matrixRoom);
     }
 
     /**

@@ -42,7 +42,11 @@ import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointCont
 import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import net.fhirfactory.pegacorn.workshops.InterSubSystemIntegrationWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractEgressAPIClientGatewayWUP;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.model.OnExceptionDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -77,9 +81,6 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
     private SynapseAdminAccessToken synapseAccessToken;
 
     @Inject
-    private PegacornEnvironmentProperties environmentProperties;
-
-    @Inject
     private SynapseAccessTokenExtractorBean synapseAccessTokenExtractorBean;
 
     @Inject
@@ -90,6 +91,10 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
 
     @Inject
     private SynapseResponseProcessingBean responseProcessor;
+
+    @Produce
+    private ProducerTemplate camelRouteInjector;
+
 
     //
     // Constructor(s)
@@ -157,11 +162,14 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
     @Override
     public void configure() throws Exception {
 
-        from(getSynapseLoginIngresEndpoint())
-                .routeId(getSynapseLoginIngresEndpoint())
+        getExceptionHandlerForGeneralSynapseTransactions();
+
+        from(SYNAPSE_LOGIN_INGRES_ENDPOINT)
+                .routeId("SynapseLoginRoute")
                 .bean(synapseLoginMethodCreatorBean, "createRequest")
                 .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
+                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
                 .bean(synapseAccessTokenExtractorBean, "extractAndSetToken");
 
         from(getSynapseRoomActionIngresEndpoint())
@@ -169,7 +177,19 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
                 .bean(synapseMethodCreator, "createRequest")
                 .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
+                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .to("direct:SynapseResponseProcessor");
+
+        from("direct:SynapseResponseProcessor")
                 .bean(responseProcessor, "processResponse");
+    }
+
+    protected OnExceptionDefinition getExceptionHandlerForGeneralSynapseTransactions(){
+        OnExceptionDefinition exceptionDef = onException(Exception.class)
+                .handled(true)
+                .log(LoggingLevel.ERROR, "Matrix API Proxy Exception: Headers -> ${headers}, body -> ${body}")
+                .to("direct:SynapseResponseProcessor");
+        return(exceptionDef);
     }
 
     @Override
@@ -235,31 +255,29 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
 
         SynapseAPIResponse queryResponse = new SynapseAPIResponse();
 
-
         getLogger().debug(".executeUserAction(): Exit, queryResponse->{}", queryResponse);
         return (queryResponse);
     }
 
+    //
+    // Login Sequence
+    //
+
     @Override
-    public void executePostInitialisationActivities(){
-        // Get the AccessToken and assign it
-        String synapseAdminUserName = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ADMIN_USER_NAME_PROPERTY);
-        String synapseAdminUserPassword = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ADMIN_USER_PASSWORD_PROPERTY);
-        String synapseAccessToken  = environmentProperties.getMandatoryProperty(SynapseAdminAccessToken.SYNAPSE_ACCESS_TOKEN_PROPERTY);
-
-        if(StringUtils.isBlank(synapseAdminUserName) || StringUtils.isBlank(synapseAdminUserPassword)){
-            throw(new RuntimeException("SynapseAdminUserName or SynapseAdminUserPassword is blank"));
-        }
-
-        getSynapseAccessToken().setRemoteAccessToken(null);
-        getSynapseAccessToken().setUserName(synapseAdminUserName);
-        getSynapseAccessToken().setUserPassword(synapseAdminUserPassword);
-
+    public String executeLogin() {
+        getLogger().debug(".executeLogin(): Entry");
+        String sessionAccessToken = (String)getCamelRouteInjector().sendBody(SYNAPSE_LOGIN_INGRES_ENDPOINT, ExchangePattern.InOut, "Nothing" );
+        getLogger().debug(".executeLogin(): Entry, sessionAccessToken->{}", sessionAccessToken);
+        return(sessionAccessToken);
     }
 
-    //
+//
     // Getters (and Setters)
     //
+
+    protected ProducerTemplate getCamelRouteInjector(){
+        return(this.camelRouteInjector);
+    }
 
     protected SynapseAdminAccessToken getSynapseAccessToken(){
         return(this.synapseAccessToken);
@@ -292,11 +310,6 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
     @Override
     public WorkshopInterface getWorkshop() {
         return workshop;
-    }
-
-    @Override
-    public String getSynapseLoginIngresEndpoint() {
-        return (SYNAPSE_LOGIN_INGRES_ENDPOINT);
     }
 
     @Override

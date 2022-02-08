@@ -71,6 +71,53 @@ public class SynapseUserMethods {
     // Business Methods
     //
 
+    public MAPIResponse loginUser(String userId, String password){
+        MAPIResponse taskResponse = new MAPIResponse();
+
+        return(taskResponse);
+    }
+
+    //
+    // Rate Limit Functions
+    public MAPIResponse overrideRateLimit(String userId, Integer transactionsPerSecond, Integer burstTransactions){
+        getLogger().debug(".overrideRateLimit(): Entry");
+        SynapseQuery query = new SynapseQuery();
+        //
+        // Create the Query
+        query.setHttpPath("/_synapse/admin/v1/users/"+userId+"/override_ratelimit");
+        query.setHttpMethod(HttpMethod.POST.name());
+
+        JSONObject bodyObject = new JSONObject();
+        bodyObject.put("messages_per_second", transactionsPerSecond);
+        bodyObject.put("burst_count", burstTransactions);
+
+        query.setBody(bodyObject.toString());
+
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+        getLogger().debug(".getALLAccounts(): response->{}", response);
+
+        MAPIResponse taskResponse = new MAPIResponse();
+        taskResponse.setResponseCode(response.getResponseCode());
+        taskResponse.setResponseContent(response.getResponseContent());
+
+        return(taskResponse);
+    }
+
+    public MAPIResponse getRateLimit(String userId){
+
+        MAPIResponse taskResponse = new MAPIResponse();
+        return(taskResponse);
+    }
+
+    public MAPIResponse deleteRateLimit(String userId){
+        MAPIResponse taskResponse = new MAPIResponse();
+
+        return(taskResponse);
+    }
+
+    //
+    // User Account Details
+
     public MAPIResponse getUserAccountDetail(String userID){
         MAPIResponse taskResponse = new MAPIResponse();
 
@@ -119,10 +166,10 @@ public class SynapseUserMethods {
         try {
             userList = getJSONMapper().readValue(rawUserSet, new TypeReference<List<SynapseUser>>(){});
         } catch (JsonProcessingException e) {
-            getLogger().error(".getRooms(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
+            getLogger().error(".getALLAccounts(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
         }
 
-        getLogger().info(".getRooms(): Retrieved User Count->{}", userList.size());
+        getLogger().info(".getALLAccounts(): Retrieved User Count->{}", userList.size());
 
         return(userList);
     }
@@ -139,17 +186,26 @@ public class SynapseUserMethods {
         return(taskResponse);
     }
 
+    //
+    // User Membership
+
     public MAPIResponse getUserRooms(String userID){
         MAPIResponse taskResponse = new MAPIResponse();
 
         return(taskResponse);
     }
 
+    //
+    // User Media
+
     public MAPIResponse getUserMedia(String userID){
         MAPIResponse taskResponse = new MAPIResponse();
 
         return(taskResponse);
     }
+
+    //
+    // User Devices
 
     public MAPIResponse getUserDevices(String userID){
         MAPIResponse taskResponse = new MAPIResponse();

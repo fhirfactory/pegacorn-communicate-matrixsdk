@@ -28,37 +28,33 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class MatrixAccessToken extends APIAccessToken {
 
-    private String matrixUserId;
-
     //
     // Constructor(s)
     //
 
     public MatrixAccessToken(){
         super();
-        matrixUserId = "@replicabridge:aether-itops-replica-server.local";
     }
 
     //
     // Getters (and Setters)
     //
 
-    public String getMatrixUserId() {
-        return matrixUserId;
-    }
-
     //
     // To String
     //
 
+
     @Override
     public String toString() {
         return "MatrixAccessToken{" +
-                "remoteAccessToken='" + getRemoteAccessToken() + '\'' +
+                "userId='" + getUserId() + '\'' +
+                ", sessionAccessToken='" + getSessionAccessToken() + '\'' +
+                ", userPassword='" + getUserPassword() + '\'' +
+                ", userName='" + getUserName() + '\'' +
+                ", remoteAccessToken='" + getRemoteAccessToken() + '\'' +
                 ", localAccessToken='" + getLocalAccessToken() + '\'' +
                 ", lastAccessTime=" + getLastAccessTime() +
-                ", accessLock=" + getAccessLock() +
-                ", matrixUserId=" + matrixUserId +
                 '}';
     }
 }
