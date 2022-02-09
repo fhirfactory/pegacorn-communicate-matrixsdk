@@ -34,6 +34,7 @@ public class MatrixAccessToken extends APIAccessToken {
 
     public MatrixAccessToken(){
         super();
+        setUserName("application-service-admin");
     }
 
     //
