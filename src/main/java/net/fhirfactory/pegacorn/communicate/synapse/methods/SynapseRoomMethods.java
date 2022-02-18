@@ -56,7 +56,9 @@ import java.util.List;
 public class SynapseRoomMethods {
     private static final Logger LOG = LoggerFactory.getLogger(SynapseRoomMethods.class);
 
-    ObjectMapper jsonMapper;
+    private ObjectMapper jsonMapper;
+
+    private String DEFAULT_ROOM_QUERY_RESPONSE_LIMIT = "1000";
 
     @Inject
     SynapseAdminProxyInterface synapseProxy;
@@ -90,48 +92,69 @@ public class SynapseRoomMethods {
             searchTerm = "*";
         }
 
-        //
-        // Create the Query
-        if(searchTerm.equals("*")){
-            query.setHttpPath("/_synapse/admin/v1/rooms?limit=10000");
-        } else {
-            query.setHttpPath("/_synapse/admin/v1/rooms?search_term="+searchTerm+"&limit=10000");
-        }
-        query.setHttpMethod(HttpMethod.GET.name());
-
         List<SynapseRoom> roomSet = new ArrayList<>();
 
         SynapseAPIResponse response = null;
-        try{
-            response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
-        } catch( Exception ex){
-            getLogger().warn(".getRooms(): Error, message->{}", ExceptionUtils.getMessage(ex));
-            return(roomSet);
+        boolean hasMoreRooms = false;
+        int offset = 0;
+        int totalRooms = 0;
+        int currentRoomCount = 0;
+        do {
+            try {
+                //
+                // Create the Query
+                query.setHttpMethod(HttpMethod.GET.name());
+                if(searchTerm.equals("*")){
+                    query.setHttpPath("/_synapse/admin/v1/rooms?limit=" + DEFAULT_ROOM_QUERY_RESPONSE_LIMIT + "&from=" + offset);
+                } else {
+                    query.setHttpPath("/_synapse/admin/v1/rooms?search_term="+searchTerm+"&limit=" + DEFAULT_ROOM_QUERY_RESPONSE_LIMIT + "&from=" + offset);
+                }
+                //
+                // Execute Request
+                response = (SynapseAPIResponse) camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+                getLogger().debug(".getRooms(): response->{}", response);
+                if(response.getResponseCode() != 200){
+                    getLogger().warn("getRooms(): Exit, something went wrong, returning current list");
+                    return(roomSet);
+                }
+                //
+                // Extract the Rooms
+                JSONObject localMessageObject = new JSONObject(response.getResponseContent());
+                LOG.debug("getRooms(): Converted to JSONObject --> " + localMessageObject.toString());
+                JSONArray localMessageEvents = localMessageObject.getJSONArray("rooms");
+                LOG.debug("getRooms(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
+                boolean processingIsSuccessful = true;
+
+                //
+                // Get Number of Rooms (Total)
+                totalRooms = localMessageObject.getInt("total_rooms");
+                int thisRoomCount = localMessageEvents.length();
+                getLogger().info(".getRooms(): Retrieved Set: Start->{}, End->{} of Total->{}", offset, (offset + thisRoomCount-1), totalRooms);
+                hasMoreRooms = localMessageObject.has("next_batch");
+                if(hasMoreRooms) {
+                    offset = localMessageObject.getInt("next_batch");
+                }
+                getLogger().info(".getRooms(): Retrieved Set: hasMoreRooms->{}, offset->{}", hasMoreRooms, offset);
+                String rawRoomSet = localMessageEvents.toString();
+                try {
+                    List<SynapseRoom> additionalRooms = getJSONMapper().readValue(rawRoomSet, new TypeReference<List<SynapseRoom>>(){});
+                    roomSet.addAll(additionalRooms);
+                } catch (JsonProcessingException e) {
+                    getLogger().error(".getRooms(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
+                }
+                currentRoomCount = roomSet.size();
+            } catch (Exception ex) {
+                getLogger().warn(".getRooms(): Error, message->{}", ExceptionUtils.getMessage(ex));
+                return (roomSet);
+            }
+        } while(hasMoreRooms);
+
+        int retrievedRooms = roomSet.size();
+        if(totalRooms != retrievedRooms){
+            getLogger().warn(".getRooms(): Retrieved Room Count->{}, Expected Room Count->{}",retrievedRooms, totalRooms);
+        } else {
+            getLogger().info(".getRooms(): Retrieved Room Count->{}, Expected Room Count->{}",retrievedRooms, totalRooms);
         }
-
-        getLogger().debug(".getRooms(): response->{}", response);
-
-        if(response.getResponseCode() != 200){
-            getLogger().debug("getRooms(): Exit, something went wrong, returning empty list");
-            return(roomSet);
-        }
-
-        //
-        // Extract the Rooms
-        JSONObject localMessageObject = new JSONObject(response.getResponseContent());
-        LOG.info("getRooms(): Converted to JSONObject --> " + localMessageObject.toString());
-        JSONArray localMessageEvents = localMessageObject.getJSONArray("rooms");
-        LOG.info("getRooms(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
-        boolean processingIsSuccessful = true;
-
-        String rawRoomSet = localMessageEvents.toString();
-        try {
-            roomSet = getJSONMapper().readValue(rawRoomSet, new TypeReference<List<SynapseRoom>>(){});
-        } catch (JsonProcessingException e) {
-            getLogger().error(".getRooms(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
-        }
-
-        getLogger().info(".getRooms(): Retrieved Room Count->{}", roomSet.size());
 
         getLogger().info(".getRooms(): Exit, roomSet->{}", roomSet);
         return(roomSet);
