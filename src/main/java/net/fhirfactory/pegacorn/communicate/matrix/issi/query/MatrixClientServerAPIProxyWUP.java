@@ -168,33 +168,33 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
         from(getMatrixApplicationServicesIngresEndpoint())
                 .routeId(getMatrixApplicationServicesIngresEndpoint())
                 .bean(applicationServicesQueryProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
         from(getMatrixRoomActionIngresEndpoint())
                 .routeId(getMatrixRoomActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
         from(getMatrixSpaceActionIngresEndpoint())
                 .routeId(getMatrixSpaceActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
         from(getMatrixUserActionIngresEndpoint())
                 .routeId(getMatrixUserActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
-                .log(LoggingLevel.INFO, "Request: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .log(LoggingLevel.INFO, "Response: Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
         from("direct:httpTransactionResponse")

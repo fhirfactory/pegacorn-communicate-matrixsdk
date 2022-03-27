@@ -22,7 +22,6 @@
 package net.fhirfactory.pegacorn.communicate.matrix.methods;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.netty.handler.codec.http.HttpMethod;
@@ -36,7 +35,6 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCre
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -162,22 +160,11 @@ public class MatrixSpaceMethods {
             creationRequest.put("power_level_content_override", powerlevelOverrideObject);
         }
 
-        /*
-        try {
-            String roomCreationAsString = jsonMapper.writeValueAsString(roomCreation);
-            getLogger().info(".createSpace(): roomCreationAsString->{}", roomCreationAsString);
-            query.setBody(roomCreationAsString);
-        } catch (JsonProcessingException e) {
-            getLogger().error(".createSpace(): Error, could convert MRoomCreation to String, stack->{}", ExceptionUtils.getStackTrace(e));
-        }
-
-         */
-
-        getLogger().info(".createSpace(): request.body->{}", creationRequest);
-
+        getLogger().info(".createSpace(): creationRequest->{}", creationRequest);
         query.setBody(creationRequest.toString());
-
+        getLogger().info(".createSpace(): query->{}", query);
         MAPIResponse mapiResponse = matrixAdminAPI.executeSpaceAction(query);
+        getLogger().info(".createSpace(): mapiResponse->{}", mapiResponse);
 
         MCreationContentResponse response = new MCreationContentResponse();
         SynapseRoom synapseRoom = null;
@@ -198,11 +185,11 @@ public class MatrixSpaceMethods {
 
 
 
-        getLogger().debug(".createSpace(): Response to creation matrixRoom->{}",matrixRoom);
+        getLogger().info(".createSpace(): Exit, matrixRoom->{}",matrixRoom);
         return(matrixRoom);
     }
 
-    public MAPIResponse addChildToSpace(String spaceID, String childID){
+    public MAPIResponse addChildToSpace(String spaceID, String childID, String serverSpec){
         getLogger().debug(".addChildToSpace(): Entry, spaceID->{}, childID->{}", spaceID, childID);
         MatrixQuery query = new MatrixQuery();
 
@@ -215,7 +202,7 @@ public class MatrixSpaceMethods {
         JSONObject bodyObject = new JSONObject();
         JSONArray viaObject = new JSONArray();
         // TODO - retrieve server name from external configuration.
-        viaObject.put("itops.test.gov.au");
+        viaObject.put(":" + serverSpec);
         bodyObject.put("via", viaObject);
         bodyObject.put("suggested", false);
         bodyObject.put("auto_join", true);
@@ -231,7 +218,7 @@ public class MatrixSpaceMethods {
         return(mapiResponse);
     }
 
-    public List<MatrixRoom> getContainedRoomIDs(MatrixRoom space, Integer depth){
+    public List<MatrixRoom> getContainedRooms(MatrixRoom space, Integer depth){
         getLogger().debug(".getContainedRoomIDs(): Entry, space->{}, depth->{}", space, depth);
 
         if(space == null){
@@ -329,9 +316,15 @@ public class MatrixSpaceMethods {
                         for (int containedRoomCounter = 0; containedRoomCounter < containedRoomListSize; containedRoomCounter += 1) {
                             JSONObject currentContainedRoomObject = containedRooms.getJSONObject(containedRoomCounter);
                             String currentContainedRoomId = currentContainedRoomObject.getString("state_key");
-                            if (!currentContainedRoomId.contentEquals(roomID)) {
-                                getLogger().info(".getContainedRoomIDs(): Adding Contained Room: roomId->{}", currentContainedRoomId);
-                                currentMatrixRoom.getContainedRoomIds().add(currentContainedRoomId);
+                            String childType = currentContainedRoomObject.getString("type");
+                            if(StringUtils.isNotEmpty(childType)) {
+                                boolean isChild = childType.contentEquals("m.space.child");
+                                if (isChild) {
+                                    if (!currentContainedRoomId.contentEquals(roomID)) {
+                                        getLogger().info(".getContainedRoomIDs(): Adding Contained Room: roomId->{}", currentContainedRoomId);
+                                        currentMatrixRoom.getContainedRoomIds().add(currentContainedRoomId);
+                                    }
+                                }
                             }
                         }
                     }

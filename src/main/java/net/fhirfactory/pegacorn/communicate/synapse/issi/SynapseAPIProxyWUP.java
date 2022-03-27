@@ -167,17 +167,17 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
         from(SYNAPSE_LOGIN_INGRES_ENDPOINT)
                 .routeId("SynapseLoginRoute")
                 .bean(synapseLoginMethodCreatorBean, "createRequest")
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
                 .bean(synapseAccessTokenExtractorBean, "extractAndSetToken");
 
         from(getSynapseRoomActionIngresEndpoint())
                 .routeId(getSynapseRoomActionIngresEndpoint())
                 .bean(synapseMethodCreator, "createRequest")
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
                 .to("netty-http:" + getUriSpecification())
-                .log(LoggingLevel.INFO, "Headers -> ${headers}, body -> ${body}")
+                .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
                 .to("direct:SynapseResponseProcessor");
 
         from("direct:SynapseResponseProcessor")

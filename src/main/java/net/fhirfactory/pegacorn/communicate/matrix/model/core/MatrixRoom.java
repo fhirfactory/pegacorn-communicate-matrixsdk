@@ -141,7 +141,7 @@ public class MatrixRoom extends SynapseRoom implements Serializable {
                 ", guestCanJoin=" + guestCanJoin +
                 ", creationDate=" + creationDate +
                 ", containedRoomIds=" + containedRoomIds +
-                ", containedRooms=" + containedRooms +
+//                ", containedRooms=" + containedRooms +
                 ", joinedLocalDevices=" + getJoinedLocalDevices() +
                 ", topic='" + getTopic() + '\'' +
                 ", avatar='" + getAvatar() + '\'' +
