@@ -21,7 +21,9 @@
  */
 package net.fhirfactory.pegacorn.communicate.matrix.model.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -128,6 +130,24 @@ public class MatrixRoom extends SynapseRoom implements Serializable {
         this.creationDate = creationDate;
     }
 
+    @JsonIgnore
+    public void addChildRoom(MatrixRoom room){
+        if(room.getRoomID().contentEquals(getRoomID())){
+            // do nothing, as we don't want a recursive loop
+            return;
+        }
+        for(MatrixRoom currentRoom: getContainedRooms()){
+            if(currentRoom.getRoomID().contentEquals(room.getRoomID())){
+                // room is already a child, do nothing
+                return;
+            }
+        }
+        getContainedRooms().add(room);
+        if(!getContainedRoomIds().contains(room.getRoomID())){
+            getContainedRoomIds().add(room.getRoomID());
+        }
+    }
+
     //
     // To String
     //
@@ -135,30 +155,50 @@ public class MatrixRoom extends SynapseRoom implements Serializable {
 
     @Override
     public String toString() {
-        return "MatrixRoom{" +
-                "roomType='" + roomType + '\'' +
-                ", worldReadable=" + worldReadable +
-                ", guestCanJoin=" + guestCanJoin +
-                ", creationDate=" + creationDate +
-                ", containedRoomIds=" + containedRoomIds +
-//                ", containedRooms=" + containedRooms +
-                ", joinedLocalDevices=" + getJoinedLocalDevices() +
-                ", topic='" + getTopic() + '\'' +
-                ", avatar='" + getAvatar() + '\'' +
-                ", roomID='" + getRoomID() + '\'' +
-                ", name='" + getName() + '\'' +
-                ", canonicalAlias='" + getCanonicalAlias() + '\'' +
-                ", joinedMembers=" + getJoinedMembers() +
-                ", joinedLocalMembers=" + getJoinedLocalMembers() +
-                ", version='" + getVersion() + '\'' +
-                ", creator='" + getCreator() + '\'' +
-                ", encryption='" + getEncryption() + '\'' +
-                ", federatable=" + isFederatable() +
-                ", publicRoom=" + isPublicRoom() +
-                ", joinRules='" + getJoinRules() + '\'' +
-                ", guestAccess='" + getGuestAccess() + '\'' +
-                ", historyVisibility='" + getHistoryVisibility() + '\'' +
-                ", stateEventsCount=" + getStateEventsCount() +
-                '}';
+        StringBuilder toStringBuilder = new StringBuilder();
+        toStringBuilder.append("MatrixRoom{");
+        toStringBuilder.append("roomType='" + roomType + '\'');
+        toStringBuilder.append(", worldReadable=" + worldReadable);
+        toStringBuilder.append(", guestCanJoin=" + guestCanJoin);
+        toStringBuilder.append(", creationDate=" + creationDate);
+        toStringBuilder.append(", containedRoomIds=" + containedRoomIds);
+        toStringBuilder.append(", containedRooms=");
+        if(containedRooms != null) {
+            if(!containedRooms.isEmpty()) {
+                toStringBuilder.append("[ ");
+                for(MatrixRoom currentChildRoom: containedRooms) {
+                    if(StringUtils.isNotEmpty(currentChildRoom.getCanonicalAlias())) {
+                        toStringBuilder.append(currentChildRoom.getName() + "(" + currentChildRoom.getCanonicalAlias() + ") ");
+                    } else {
+                        toStringBuilder.append(currentChildRoom.getName());
+                    }
+                }
+                toStringBuilder.append("]");
+            } else {
+                toStringBuilder.append("[Empty]");
+            }
+        } else {
+            toStringBuilder.append("[Empty]");
+        }
+        toStringBuilder.append(", joinedLocalDevices=" + getJoinedLocalDevices());
+        toStringBuilder.append(", topic='" + getTopic() + '\'');
+        toStringBuilder.append(", avatar='" + getAvatar() + '\'');
+        toStringBuilder.append(", roomID='" + getRoomID() + '\'');
+        toStringBuilder.append(", name='" + getName() + '\'');
+        toStringBuilder.append(", canonicalAlias='" + getCanonicalAlias() + '\'');
+        toStringBuilder.append(", joinedMembers=" + getJoinedMembers());
+        toStringBuilder.append(", joinedLocalMembers=" + getJoinedLocalMembers());
+        toStringBuilder.append(", version='" + getVersion() + '\'');
+        toStringBuilder.append(", creator='" + getCreator() + '\'');
+        toStringBuilder.append(", encryption='" + getEncryption() + '\'');
+        toStringBuilder.append(", federatable=" + isFederatable());
+        toStringBuilder.append(", publicRoom=" + isPublicRoom());
+        toStringBuilder.append(", joinRules='" + getJoinRules() + '\'');
+        toStringBuilder.append(", guestAccess='" + getGuestAccess() + '\'');
+        toStringBuilder.append(", historyVisibility='" + getHistoryVisibility() + '\'');
+        toStringBuilder.append(", stateEventsCount=" + getStateEventsCount());
+        toStringBuilder.append('}');
+
+        return(toStringBuilder.toString());
     }
 }

@@ -27,15 +27,23 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 
 public class MAPIResponse implements Serializable {
-    int responseCode;
-    String responseContent;
-    MAPIErrorResponse errorResponse;
+    private int responseCode;
+    private String responseContent;
+    private MAPIErrorResponse errorResponse;
+
+    //
+    // Constructor(s)
+    //
 
     public MAPIResponse(){
         this.responseContent = null;
         this.responseCode = 0;
         this.errorResponse = null;
     }
+
+    //
+    // Getters And Setters
+    //
 
     public int getResponseCode() {
         return responseCode;
@@ -100,4 +108,17 @@ public class MAPIResponse implements Serializable {
         }
     }
 
+    //
+    // To String
+    //
+
+    @Override
+    public String toString() {
+        return "MAPIResponse{" +
+                "responseCode=" + responseCode +
+                ", responseContent='" + responseContent + '\'' +
+                ", errorResponse=" + errorResponse +
+                ", successful=" + isSuccessful() +
+                '}';
+    }
 }

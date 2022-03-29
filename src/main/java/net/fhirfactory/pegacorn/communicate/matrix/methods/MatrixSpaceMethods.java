@@ -86,7 +86,7 @@ public class MatrixSpaceMethods {
      * @return
      */
     public MatrixRoom createSpace(String matrixUserID, MRoomCreation roomCreation){
-        getLogger().info(".createSpace(): Entry, matrixUserID->{}, roomCreation->{}", matrixUserID, roomCreation);
+        getLogger().debug(".createSpace(): Entry, matrixUserID->{}, roomCreation->{}", matrixUserID, roomCreation);
         MatrixQuery query = new MatrixQuery();
 
         //
@@ -160,11 +160,11 @@ public class MatrixSpaceMethods {
             creationRequest.put("power_level_content_override", powerlevelOverrideObject);
         }
 
-        getLogger().info(".createSpace(): creationRequest->{}", creationRequest);
+        getLogger().debug(".createSpace(): creationRequest->{}", creationRequest);
         query.setBody(creationRequest.toString());
-        getLogger().info(".createSpace(): query->{}", query);
+        getLogger().debug(".createSpace(): query->{}", query);
         MAPIResponse mapiResponse = matrixAdminAPI.executeSpaceAction(query);
-        getLogger().info(".createSpace(): mapiResponse->{}", mapiResponse);
+        getLogger().debug(".createSpace(): mapiResponse->{}", mapiResponse);
 
         MCreationContentResponse response = new MCreationContentResponse();
         SynapseRoom synapseRoom = null;
@@ -183,9 +183,7 @@ public class MatrixSpaceMethods {
             }
         }
 
-
-
-        getLogger().info(".createSpace(): Exit, matrixRoom->{}",matrixRoom);
+        getLogger().debug(".createSpace(): Exit, matrixRoom->{}",matrixRoom);
         return(matrixRoom);
     }
 
@@ -218,27 +216,27 @@ public class MatrixSpaceMethods {
         return(mapiResponse);
     }
 
-    public List<MatrixRoom> getContainedRooms(MatrixRoom space, Integer depth){
-        getLogger().debug(".getContainedRoomIDs(): Entry, space->{}, depth->{}", space, depth);
+    public MatrixRoom getSpaceTree(MatrixRoom space, Integer depth){
+        getLogger().debug(".getSpaceTree(): Entry, space->{}, depth->{}", space, depth);
 
         if(space == null){
-            getLogger().debug(".getContainedRoomIDs(): Exit, Space is null, returning empty list");
-            return(new ArrayList<>());
+            getLogger().debug(".getSpaceTree(): Exit, Space is null, returning empty list");
+            return(null);
         }
         String spaceId = space.getRoomID();
         if(StringUtils.isEmpty(spaceId) || depth == null){
-            getLogger().debug(".getContainedRoomIDs(): Exit, Either spaceID is empty or depth is null, returning empty list");
-            return(new ArrayList<>());
+            getLogger().debug(".getSpaceTree(): Exit, Either spaceID is empty or depth is null, returning empty list");
+            return(null);
         }
 
         if(depth < 1){
-            getLogger().debug(".getContainedRoomIDs(): Exit, depth is less then 1, returning empty list");
-            return(new ArrayList<>());
+            getLogger().debug(".getSpaceTree(): Exit, depth is less then 1, returning empty list");
+            return(null);
         }
 
         MatrixQuery query = new MatrixQuery();
 
-        String path = "_matrix/client/v1/rooms/"+spaceId+"/hierarchy?max_depth="+depth.toString();
+        String path = "_matrix/client/v1/rooms/"+spaceId+"/hierarchy?max_depth="+depth.toString()+"&limit=1000";
         //
         // Create the Query
         query.setHttpPath(path);
@@ -247,25 +245,35 @@ public class MatrixSpaceMethods {
         MAPIResponse mapiResponse = matrixAdminAPI.executeSpaceAction(query);
 
         if(mapiResponse.getResponseCode() != 200){
-            getLogger().debug(".getContainedRoomIDs(): Exit, bad response, error->{}", mapiResponse.getErrorResponse());
-            return(new ArrayList<>());
+            getLogger().debug(".getSpaceTree(): Exit, bad response, error->{}", mapiResponse.getErrorResponse());
+            return(null);
         }
 
         JSONObject response = new JSONObject(mapiResponse.getResponseContent());
         JSONArray roomArray = response.getJSONArray("rooms");
 
+        MatrixRoom parentSpace = buildMatrixSpaceTree(space, roomArray);
+
+        getLogger().debug(".getSpaceTree(): Exit, parentSpace->{}", parentSpace);
+        return(parentSpace);
+    }
+
+    public MatrixRoom buildMatrixSpaceTree(MatrixRoom knownParent, JSONArray roomArray ){
+
         if(roomArray == null){
-            getLogger().debug(".getContainedRoomIDs(): Exit, No rooms");
-            return(new ArrayList<>());
+            getLogger().debug(".buildMatrixSpaceTree(): Exit, No rooms");
+            return(null);
         }
 
         List<MatrixRoom> roomList = new ArrayList<>();
+        roomList.add(knownParent);
+
         int roomCount = roomArray.length();
-        for(int counter= 0; counter < roomCount; counter += 1){
+        for(int counter= 0; counter < roomCount; counter += 1) {
             JSONObject currentRoomObject = roomArray.getJSONObject(counter);
             String roomID = currentRoomObject.getString("room_id");
             String roomName = currentRoomObject.getString("name");
-            String roomTopic = currentRoomObject.optString("topic","");
+            String roomTopic = currentRoomObject.optString("topic", "");
             String roomAlias = currentRoomObject.getString("canonical_alias");
             String roomType = currentRoomObject.optString("room_type");
             Integer roomJoinedMembers = currentRoomObject.optInt("num_joined_members", 0);
@@ -278,8 +286,8 @@ public class MatrixSpaceMethods {
             MatrixRoom currentMatrixRoom = null;
 
             if (StringUtils.isNotEmpty(roomID) && StringUtils.isNotEmpty(roomName) && StringUtils.isNotEmpty(roomAlias)) {
-                if(space.getRoomID().contentEquals(roomID)){
-                    currentMatrixRoom = space;
+                if (knownParent.getRoomID().contentEquals(roomID)) {
+                    currentMatrixRoom = knownParent;
                 } else {
                     currentMatrixRoom = new MatrixRoom();
                     currentMatrixRoom.setRoomID(roomID);
@@ -306,33 +314,70 @@ public class MatrixSpaceMethods {
                     if (roomCreationTimeStamp != null) {
                         currentMatrixRoom.setCreationDate(roomCreationTimeStamp);
                     }
-                    getLogger().info(".getContainedRoomIDs(): Adding room-->{}, name->{}", roomID, roomName);
+                    getLogger().debug(".buildMatrixSpaceTree(): Adding room-->{}, name->{}, canonicalId->{}", roomID, roomName, roomAlias);
                     roomList.add(currentMatrixRoom);
                 }
-                if (containedRooms != null) {
-                    if (!containedRooms.isEmpty()) {
-                        getLogger().info(".getContainedRoomIDs(): Has contained rooms!");
-                        int containedRoomListSize = containedRooms.length();
-                        for (int containedRoomCounter = 0; containedRoomCounter < containedRoomListSize; containedRoomCounter += 1) {
-                            JSONObject currentContainedRoomObject = containedRooms.getJSONObject(containedRoomCounter);
-                            String currentContainedRoomId = currentContainedRoomObject.getString("state_key");
-                            String childType = currentContainedRoomObject.getString("type");
-                            if(StringUtils.isNotEmpty(childType)) {
-                                boolean isChild = childType.contentEquals("m.space.child");
-                                if (isChild) {
-                                    if (!currentContainedRoomId.contentEquals(roomID)) {
-                                        getLogger().info(".getContainedRoomIDs(): Adding Contained Room: roomId->{}", currentContainedRoomId);
-                                        currentMatrixRoom.getContainedRoomIds().add(currentContainedRoomId);
-                                    }
+                getLogger().debug(".buildMatrixSpaceTree(): [Processing Children] Start");
+                if (containedRooms != null && !containedRooms.isEmpty()) {
+                    getLogger().debug(".buildMatrixSpaceTree(): [Processing Children] Has contained rooms!");
+                    int containedRoomListSize = containedRooms.length();
+                    for (int containedRoomCounter = 0; containedRoomCounter < containedRoomListSize; containedRoomCounter += 1) {
+                        JSONObject currentContainedRoomObject = containedRooms.getJSONObject(containedRoomCounter);
+                        String currentContainedRoomId = currentContainedRoomObject.getString("state_key");
+                        String childType = currentContainedRoomObject.getString("type");
+                        if (StringUtils.isNotEmpty(childType)) {
+                            boolean isChild = childType.contentEquals("m.space.child");
+                            if (isChild) {
+                                if (!currentContainedRoomId.contentEquals(roomID)) {
+                                    getLogger().debug(".buildMatrixSpaceTree(): Adding Contained Room: roomId->{}", currentContainedRoomId);
+                                    currentMatrixRoom.getContainedRoomIds().add(currentContainedRoomId);
                                 }
                             }
                         }
                     }
+                    getLogger().debug(".buildMatrixSpaceTree(): [Processing Children] Finished Processing Contained Rooms!");
+                } else {
+                    getLogger().debug(".buildMatrixSpaceTree(): [Processing Children] Has no contained rooms!");
+                }
+                getLogger().debug(".buildMatrixSpaceTree(): [Processing Children] Finish");
+            }
+        }
+
+        getLogger().debug(".buildMatrixSpaceTree(): [Processing Children Rooms] Start");
+        for(MatrixRoom currentParentRoom: roomList){
+            getLogger().debug(".buildMatrixSpaceTree(): Processing Room: room-->{}, name->{}, canonicalId->{}", currentParentRoom.getRoomID(), currentParentRoom.getName(), currentParentRoom.getCanonicalAlias());
+            for (MatrixRoom currentChildRoom : roomList) {
+                if (currentParentRoom.getContainedRoomIds().contains(currentChildRoom.getRoomID())){
+                    currentParentRoom.addChildRoom(currentChildRoom);
+                    getLogger().debug(".buildMatrixSpaceTree(): Adding Contained Room: Adding room-->{}, name->{}, canonicalId->{}", currentChildRoom.getRoomID(), currentChildRoom.getName(), currentChildRoom.getCanonicalAlias());
+                    currentParentRoom.getContainedRoomIds().remove(currentChildRoom.getRoomID());
                 }
             }
         }
-        getLogger().debug(".getContainedRoomIDs(): Exit, roomList->{}", roomList);
-        return(roomList);
+        getLogger().debug(".buildMatrixSpaceTree(): [Processing Children Rooms] Finish");
+
+        getLogger().debug(".buildMatrixSpaceTree(): [Adding Missing Children Rooms] Start");
+        for(MatrixRoom currentRoom: roomList){
+            ArrayList<String> currentRoomContainedRoomList = new ArrayList<>();
+            currentRoomContainedRoomList.addAll(currentRoom.getContainedRoomIds());
+            for(String currentContainedRoomId: currentRoomContainedRoomList){
+                SynapseRoom room = synapseRoomAPI.getRoomDetail(currentContainedRoomId);
+                if(room != null){
+                    getLogger().debug(".buildMatrixSpaceTree(): [Adding Missing Children Rooms] Adding Room: room-->{}, name->{}, canonicalId->{}", room.getRoomID(), room.getName(), room.getCanonicalAlias());
+                    MatrixRoom matrixRoom = new MatrixRoom(room);
+                    currentRoom.addChildRoom(matrixRoom);
+                    try{
+                        getSpaceTree(matrixRoom, 8);
+                    } catch (Exception ex){
+                        getLogger().warn(".buildMatrixSpaceTree(): Could resolve any children for orphanned room!");
+                    }
+                    currentRoom.getContainedRoomIds().remove(currentContainedRoomId);
+                }
+            }
+        }
+        getLogger().debug(".buildMatrixSpaceTree(): [Adding Missing Children Rooms] Finish");
+
+        return(knownParent);
     }
 
     /**

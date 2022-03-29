@@ -30,10 +30,18 @@ public class MAPIErrorResponse implements Serializable {
     private String errorCode;
     private String errorDescription;
 
+    //
+    // Constructor(s)
+    //
+
     public MAPIErrorResponse(){
         this.errorCode = null;
         this.errorDescription = null;
     }
+
+    //
+    // Getters and Setters
+    //
 
     @JsonProperty("errcode")
     public String getErrorCode() {
@@ -71,5 +79,18 @@ public class MAPIErrorResponse implements Serializable {
         } else {
             return(true);
         }
+    }
+
+    //
+    // To String
+    //
+
+
+    @Override
+    public String toString() {
+        return "MAPIErrorResponse{" +
+                "errorCode='" + errorCode + '\'' +
+                ", errorDescription='" + errorDescription + '\'' +
+                '}';
     }
 }
