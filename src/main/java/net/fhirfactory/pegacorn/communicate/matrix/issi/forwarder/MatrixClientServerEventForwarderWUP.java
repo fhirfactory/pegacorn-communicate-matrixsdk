@@ -171,7 +171,7 @@ public abstract class MatrixClientServerEventForwarderWUP extends InteractEgress
     @Override
     public void configure() throws Exception {
 
-        from(getMatrixRoomEventForwarderEndpoint())
+        fromInteractEgressService(getMatrixRoomEventForwarderEndpoint())
                 .routeId(getMatrixRoomEventForwarderEndpoint())
                 .bean(eventPreparationTool, "createRequest")
                 .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")

@@ -24,7 +24,12 @@ package net.fhirfactory.pegacorn.communicate.synapse.issi.beans;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgent;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgentAccessor;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.WorkUnitProcessorMetricsAgent;
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +47,9 @@ public class SynapseQueryProcessingBean {
 
     @Inject
     private SynapseAdminAccessToken synapseAccessToken;
+
+    @Inject
+    private ProcessingPlantMetricsAgentAccessor plantMetricsAgentAccessor;
 
     //
     // Constructor(s)
@@ -72,6 +80,16 @@ public class SynapseQueryProcessingBean {
         camelExchange.getIn().setHeader(Exchange.HTTP_PATH, queryPath);
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
         camelExchange.getIn().setHeader("Authorization", "Bearer " + getSynapseAccessToken().getSessionAccessToken());
+
+        try {
+            WorkUnitProcessorMetricsAgent wupMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
+            wupMetricsAgent.incrementEgressMessageAttemptCount();
+
+            ProcessingPlantMetricsAgent plantMetricsAgent = plantMetricsAgentAccessor.getMetricsAgent();
+            plantMetricsAgent.incrementInternalMessageDistributionCount("ITOps.Replica.Server[Synapse]");
+        } catch(Exception ex){
+            getLogger().warn(".createRequest(): Problem using Metrics Services, errorMessage->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
 
         getLogger().debug(".createRequest(): Exit, body->{}", body);
         return(body);
