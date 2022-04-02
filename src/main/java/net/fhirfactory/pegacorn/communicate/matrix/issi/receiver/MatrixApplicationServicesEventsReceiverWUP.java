@@ -22,8 +22,6 @@
 
 package net.fhirfactory.pegacorn.communicate.matrix.issi.receiver;
 
-import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPServerTopologyEndpoint;
-import net.fhirfactory.pegacorn.core.model.topology.endpoints.issi.matrix.MatrixEventReceiverEndpoint;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixEventSet2UoW;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixEventSetValidator;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixMessageSplitter;
@@ -31,6 +29,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixEventN
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixUpdateException;
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPServerAdapter;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPServerTopologyEndpoint;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
@@ -46,7 +45,6 @@ import javax.inject.Inject;
 public abstract class MatrixApplicationServicesEventsReceiverWUP extends InteractIngresMessagingGatewayWUP {
 
     private static String INGRES_GATEWAY_COMPONENT = "netty-http";
-            
 
     @Inject
     private InteractWorkshop workshop;
@@ -61,6 +59,8 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
 
         getLogger().info("{}:: ingresFeed() --> {}", getClass().getSimpleName(), ingresFeed());
         getLogger().info("{}:: egressFeed() --> {}", getClass().getSimpleName(), egressFeed());
+
+
 
         //
         // Exceptions
@@ -119,15 +119,24 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         if(StringUtils.isEmpty(contextPath) || contextPath.equals("null")) {
             contextPath = "";
         }
-        String ingresString = buildIngresString(interfaceDNSName, Integer.toString(portValue), contextPath);
-        ingresEndpoint.setEndpointSpecification(ingresString);
+        String httpType = null;
+        if(httpServerAdapter.isEncrypted()){
+            httpType = "https";
+        } else {
+            httpType = "http";
+        }
+        String webServicePath = null;
+        String uriSpecification = null;
+        if(StringUtils.isEmpty(httpServerAdapter.getContextPath()) || httpServerAdapter.getContextPath().contains("null")){
+            webServicePath = "";
+            uriSpecification = httpType + "://" + interfaceDNSName + ":" + Integer.toString(portValue);
+        } else {
+            webServicePath = httpServerAdapter.getContextPath();
+            uriSpecification = httpType + "://" + interfaceDNSName + ":" + Integer.toString(portValue) + webServicePath;
+        }
+        ingresEndpoint.setEndpointSpecification(INGRES_GATEWAY_COMPONENT+":"+ uriSpecification);
         getLogger().info(".specifyIngresTopologyEndpoint(): Exit, ingresEndpoint->{}", ingresEndpoint);
         return(ingresEndpoint);
-    }
-
-    private String buildIngresString(String host, String port, String path){
-        String ingresString = "netty-http:http://"+host+":"+port+path+"/transactions/{id}";
-        return(ingresString);
     }
 
     private OnExceptionDefinition routeMatrixEventNotFoundException() {
