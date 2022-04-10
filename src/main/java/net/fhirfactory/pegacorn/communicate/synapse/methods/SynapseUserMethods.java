@@ -36,6 +36,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.datatypes.SynapseQuery
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,7 +53,10 @@ import java.util.Map;
 public class SynapseUserMethods {
     private static final Logger LOG = LoggerFactory.getLogger(SynapseUserMethods.class);
 
-    ObjectMapper jsonMapper;
+    private ObjectMapper jsonMapper;
+
+    private static final Integer USER_SEARCH_TERM_LIMIT = 1000;
+
 
     @Inject
     SynapseAdminProxyInterface synapseProxy;
@@ -118,6 +122,56 @@ public class SynapseUserMethods {
     //
     // User Account Details
 
+    public List<SynapseUser> getUsersByName(String searchTerm){
+        getLogger().debug(".getUsersByName(): Entry, searchTerm->{}", searchTerm);
+
+        List<SynapseUser> userList = getUsersByName(searchTerm, getUserSearchTermLimit());
+
+        getLogger().debug(".getUsersByName(): Retrieved User Count->{}", userList.size());
+        return(userList);
+    }
+
+    public List<SynapseUser> getUsersByName(String searchTerm, Integer limit){
+        getLogger().debug(".getUsersByName(): Entry, searchTerm->{}, limit->{}", searchTerm, limit);
+        SynapseQuery query = new SynapseQuery();
+
+        if(limit == null || (limit < 0)){
+            limit = getUserSearchTermLimit();
+        }
+
+        //
+        // Create the Query
+        query.setHttpMethod(HttpMethod.GET.name());
+
+        if(StringUtils.isEmpty(searchTerm)){
+            getLogger().debug(".getUsersByName(): searchTerm is null, equivalent to getAllUsers()");
+            query.setHttpPath("/_synapse/admin/v2/users?limit="+limit.toString());
+        } else {
+            query.setHttpPath("/_synapse/admin/v2/users?name="+searchTerm+"&limit="+limit.toString());
+        }
+        SynapseAPIResponse response = (SynapseAPIResponse)camelRouteInjector.sendBody(synapseProxy.getSynapseRoomActionIngresEndpoint(), ExchangePattern.InOut, query);
+        getLogger().debug(".getUsersByName(): response->{}", response);
+
+        //
+        // Extract the Users
+        JSONObject localMessageObject = new JSONObject(response.getResponseContent());
+        LOG.trace("getUsersByName(): Converted to JSONObject --> " + localMessageObject.toString());
+        JSONArray localMessageEvents = localMessageObject.getJSONArray("users");
+        LOG.trace("getUsersByName(): Converted to JSONArray, number of elements --> " + localMessageEvents.length());
+        boolean processingIsSuccessful = true;
+
+        String rawUserSet = localMessageEvents.toString();
+        List<SynapseUser> userList = new ArrayList<>();
+        try {
+            userList = getJSONMapper().readValue(rawUserSet, new TypeReference<List<SynapseUser>>(){});
+        } catch (JsonProcessingException e) {
+            getLogger().error(".getUsersByName(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
+        }
+
+        getLogger().debug(".getUsersByName(): Retrieved User Count->{}", userList.size());
+        return(userList);
+    }
+
     public MAPIResponse getUserAccountDetail(String userID){
         MAPIResponse taskResponse = new MAPIResponse();
 
@@ -154,7 +208,7 @@ public class SynapseUserMethods {
         getLogger().debug(".getALLAccounts(): response->{}", response);
 
         //
-        // Extract the Rooms
+        // Extract the Users
         JSONObject localMessageObject = new JSONObject(response.getResponseContent());
         LOG.trace("getALLAccounts(): Converted to JSONObject --> " + localMessageObject.toString());
         JSONArray localMessageEvents = localMessageObject.getJSONArray("users");
@@ -169,7 +223,7 @@ public class SynapseUserMethods {
             getLogger().error(".getALLAccounts(): Cannot convert retrieved room set, error->{}", ExceptionUtils.getStackTrace(e));
         }
 
-        getLogger().info(".getALLAccounts(): Retrieved User Count->{}", userList.size());
+        getLogger().debug(".getALLAccounts(): Retrieved User Count->{}", userList.size());
 
         return(userList);
     }
@@ -223,5 +277,9 @@ public class SynapseUserMethods {
 
     public ObjectMapper getJSONMapper() {
         return jsonMapper;
+    }
+
+    public Integer getUserSearchTermLimit(){
+        return(USER_SEARCH_TERM_LIMIT);
     }
 }

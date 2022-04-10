@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixApplicationServicesQueryProcessingBean;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPClientTopologyEndpoint;
-import net.fhirfactory.pegacorn.core.model.topology.endpoints.issi.matrix.MatrixAPIClientEndpoint;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixQueryProcessingBean;
 import net.fhirfactory.pegacorn.communicate.matrix.issi.query.beans.MatrixResponseProcessingBean;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.common.MatrixQuery;
@@ -35,11 +34,10 @@ import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.interfaces.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPClientAdapter;
 import net.fhirfactory.pegacorn.core.model.topology.nodes.external.ConnectedExternalSystemTopologyNode;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
-import net.fhirfactory.pegacorn.petasos.wup.helper.EgressActivityFinalisationRegistration;
 import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import net.fhirfactory.pegacorn.workshops.InterSubSystemIntegrationWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractEgressAPIClientGatewayWUP;
@@ -51,7 +49,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import javax.inject.Inject;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 

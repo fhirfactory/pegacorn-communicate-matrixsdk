@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 public class SynapseRoom implements Serializable {
+
     private String roomID;
     private String name;
     private String avatar;
