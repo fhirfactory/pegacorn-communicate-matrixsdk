@@ -153,10 +153,10 @@ public class SynapseRoomMethods {
         if(totalRooms != retrievedRooms){
             getLogger().warn(".getRooms(): Retrieved Room Count->{}, Expected Room Count->{}",retrievedRooms, totalRooms);
         } else {
-            getLogger().info(".getRooms(): Retrieved Room Count->{}, Expected Room Count->{}",retrievedRooms, totalRooms);
+            getLogger().debug(".getRooms(): Retrieved Room Count->{}, Expected Room Count->{}",retrievedRooms, totalRooms);
         }
 
-        getLogger().info(".getRooms(): Exit, roomSet->{}", roomSet);
+        getLogger().debug(".getRooms(): Exit, roomSet->{}", roomSet);
         return(roomSet);
     }
 

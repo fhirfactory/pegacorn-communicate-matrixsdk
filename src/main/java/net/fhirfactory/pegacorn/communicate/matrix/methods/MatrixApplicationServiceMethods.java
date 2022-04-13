@@ -42,6 +42,8 @@ public class MatrixApplicationServiceMethods {
 
     private ObjectMapper jsonMapper;
 
+    private static final String MATRIX_APPLICATION_SERVICE_NAME = "application-service-admin";
+
     @Inject
     private MatrixAccessToken matrixAccessToken;
 
@@ -78,7 +80,7 @@ public class MatrixApplicationServiceMethods {
         // The body
         JSONObject body = new JSONObject();
         body.put("type", "m.login.application_service");
-        body.put("username", "application-service-admin");
+        body.put("username", getMatrixApplicationServiceName());
         query.setBody(body.toString());
 
         //
@@ -115,7 +117,7 @@ public class MatrixApplicationServiceMethods {
         body.put("type", "m.login.application_service");
         JSONObject identifier = new JSONObject();
         identifier.put("type", "m.id.user");
-        identifier.put("user", "application-service-admin");
+        identifier.put("user", getMatrixApplicationServiceName());
         body.put("identifier", identifier);
 
         query.setBody(body.toString());
@@ -175,5 +177,9 @@ public class MatrixApplicationServiceMethods {
 
     protected ObjectMapper getJSONMapper(){
         return(jsonMapper);
+    }
+
+    public String getMatrixApplicationServiceName(){
+        return(MATRIX_APPLICATION_SERVICE_NAME);
     }
 }
