@@ -173,7 +173,7 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
                 .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
-        from(getMatrixRoomActionIngresEndpoint())
+        fromInteractEgressService(getMatrixRoomActionIngresEndpoint())
                 .routeId(getMatrixRoomActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
                 .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
@@ -181,7 +181,7 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
                 .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
-        from(getMatrixSpaceActionIngresEndpoint())
+        fromInteractEgressService(getMatrixSpaceActionIngresEndpoint())
                 .routeId(getMatrixSpaceActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
                 .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
@@ -189,7 +189,7 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
                 .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
-        from(getMatrixUserActionIngresEndpoint())
+        fromInteractEgressService(getMatrixUserActionIngresEndpoint())
                 .routeId(getMatrixUserActionIngresEndpoint())
                 .bean(queryPreProcessor, "createRequest")
                 .log(LoggingLevel.DEBUG, "Request: Headers -> ${headers}, body -> ${body}")
@@ -197,7 +197,7 @@ public abstract class MatrixClientServerAPIProxyWUP extends InteractEgressAPICli
                 .log(LoggingLevel.DEBUG, "Response: Headers -> ${headers}, body -> ${body}")
                 .to("direct:httpTransactionResponse");
 
-        from("direct:httpTransactionResponse")
+        fromInteractEgressService("direct:httpTransactionResponse")
                 .bean(responsePostProcessor, "processResponse");
     }
 

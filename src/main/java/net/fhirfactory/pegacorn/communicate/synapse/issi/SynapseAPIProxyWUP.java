@@ -164,7 +164,7 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
 
         getExceptionHandlerForGeneralSynapseTransactions();
 
-        from(SYNAPSE_LOGIN_INGRES_ENDPOINT)
+        fromInteractEgressService(SYNAPSE_LOGIN_INGRES_ENDPOINT)
                 .routeId("SynapseLoginRoute")
                 .bean(synapseLoginMethodCreatorBean, "createRequest")
                 .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
@@ -172,7 +172,7 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
                 .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
                 .bean(synapseAccessTokenExtractorBean, "extractAndSetToken");
 
-        from(getSynapseRoomActionIngresEndpoint())
+        fromInteractEgressService(getSynapseRoomActionIngresEndpoint())
                 .routeId(getSynapseRoomActionIngresEndpoint())
                 .bean(synapseMethodCreator, "createRequest")
                 .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
@@ -180,7 +180,7 @@ public abstract class SynapseAPIProxyWUP extends InteractEgressAPIClientGatewayW
                 .log(LoggingLevel.DEBUG, "Headers -> ${headers}, body -> ${body}")
                 .to("direct:SynapseResponseProcessor");
 
-        from("direct:SynapseResponseProcessor")
+        fromInteractEgressService("direct:SynapseResponseProcessor")
                 .bean(responseProcessor, "processResponse");
     }
 
