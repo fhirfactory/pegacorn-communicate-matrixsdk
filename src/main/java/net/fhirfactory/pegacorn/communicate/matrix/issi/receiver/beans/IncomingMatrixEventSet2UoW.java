@@ -35,7 +35,12 @@ import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
 import net.fhirfactory.pegacorn.core.model.topology.nodes.WorkUnitProcessorSoftwareComponent;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.EndpointMetricsAgent;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgent;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgentAccessor;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.WorkUnitProcessorMetricsAgent;
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +59,15 @@ public class IncomingMatrixEventSet2UoW
     @Inject
     IncomingMatrixMessageSplitter messageSplitter;
 
+    @Inject
+    private ProcessingPlantMetricsAgentAccessor plantMetricsAgentAccessor;
+
     public UoW encapsulateMatrixMessage(String matrixMessage, Exchange camelExchange)
     {
         LOG.debug(".encapsulateMatrixMessage(): Entry, Matrix Message --> {}", matrixMessage);
+
         WorkUnitProcessorSoftwareComponent wupTopologyNode = camelExchange.getProperty(PetasosPropertyConstants.WUP_TOPOLOGY_NODE_EXCHANGE_PROPERTY_NAME, WorkUnitProcessorSoftwareComponent.class);
+
         LOG.trace(".encapsulateMatrixMessage(): Creating new Payload element, first the Payload TopicToken");
         DataParcelTypeDescriptor payloadTopic = new DataParcelTypeDescriptor();
         payloadTopic.setDataParcelDefiner("Matrix");
@@ -71,6 +81,7 @@ public class IncomingMatrixEventSet2UoW
         manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_FALSE);
         manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_INBOUND_DATA_PARCEL);
         manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+
         LOG.trace(".encapsulateMatrixMessage(): Creating new Payload element, now the Payload itself");
         UoWPayload contentPayload = new UoWPayload();
         contentPayload.setPayloadManifest(manifest);
@@ -78,6 +89,27 @@ public class IncomingMatrixEventSet2UoW
         UoW newUoW = new UoW(contentPayload);
         newUoW.getEgressContent().addPayloadElement(contentPayload);
         newUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
+
+        try {
+            //
+            // add to Processing Plant metrics
+            ProcessingPlantMetricsAgent plantMetricsAgent = plantMetricsAgentAccessor.getMetricsAgent();
+            plantMetricsAgent.incrementIngresMessageCount();
+
+            //
+            // add to WUP Metrics
+            WorkUnitProcessorMetricsAgent metricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
+            metricsAgent.incrementIngresMessageCount();
+            metricsAgent.touchLastActivityInstant();
+            //
+            // Add to Endpoint Metrics
+            EndpointMetricsAgent endpointMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.ENDPOINT_METRICS_AGENT_EXCHANGE_PROPERTY, EndpointMetricsAgent.class);
+            endpointMetricsAgent.incrementIngresMessageCount();
+            endpointMetricsAgent.touchLastActivityInstant();
+        } catch(Exception ex){
+            LOG.warn(".encapsulateMatrixMessage(): Problem using Metrics Services, errorMessage->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
+
         LOG.debug("encapsulateMatrixMessage(): Exit, UoW created, newUoW --> {}", newUoW);
         return(newUoW);
     }

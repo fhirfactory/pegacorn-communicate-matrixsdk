@@ -28,8 +28,10 @@ import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.common.MatrixEventBase;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.common.contenttypes.MEventTypeEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
-import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgent;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgentAccessor;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.WorkUnitProcessorMetricsAgent;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import java.util.Locale;
 
 @Dependent
 public class MatrixEventPreparationBean {
@@ -54,7 +55,7 @@ public class MatrixEventPreparationBean {
     private MatrixAccessToken matrixAccessToken;
 
     @Inject
-    private ITOpsReplicaLocalServerName localServerName;
+    private ProcessingPlantMetricsAgentAccessor plantMetricsAgentAccessor;
 
     //
     // Constructor(s)
@@ -120,6 +121,20 @@ public class MatrixEventPreparationBean {
         camelExchange.getIn().setHeader(Exchange.HTTP_PATH, queryPath);
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
         camelExchange.getIn().setHeader("Authorization", "Bearer " + getMatrixAccessToken().getRemoteAccessToken());
+
+        //
+        // Now some metrics
+
+        try {
+            WorkUnitProcessorMetricsAgent wupMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
+            wupMetricsAgent.incrementEgressMessageAttemptCount();
+
+            ProcessingPlantMetricsAgent plantMetricsAgent = plantMetricsAgentAccessor.getMetricsAgent();
+            plantMetricsAgent.incrementInternalMessageDistributionCount("ITOps.Replica.Server[MatrixInstantMessage]");
+        } catch(Exception ex){
+            getLogger().warn(".createRequest(): Problem using Metrics Services, errorMessage->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
+
         getLogger().debug(".createRequest(): Exit, body->{}", body);
         return(body);
     }

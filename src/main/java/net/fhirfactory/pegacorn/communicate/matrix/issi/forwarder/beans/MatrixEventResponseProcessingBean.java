@@ -22,15 +22,24 @@
 package net.fhirfactory.pegacorn.communicate.matrix.issi.forwarder.beans;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgent;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgentAccessor;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.WorkUnitProcessorMetricsAgent;
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 @Dependent
 public class MatrixEventResponseProcessingBean {
     private static final Logger LOG = LoggerFactory.getLogger(MatrixEventResponseProcessingBean.class);
+
+    @Inject
+    private ProcessingPlantMetricsAgentAccessor plantMetricsAgentAccessor;
 
     //
     // Constructor(s)
@@ -54,6 +63,23 @@ public class MatrixEventResponseProcessingBean {
         int responseCode = (int)camelExchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE);
         getLogger().info(".processResponse(): Entry, responseCode->{}", responseCode);
         response.setResponseCode(responseCode);
+
+        //
+        // Now some metrics
+        try {
+            WorkUnitProcessorMetricsAgent wupMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
+            ProcessingPlantMetricsAgent plantMetricsAgent = plantMetricsAgentAccessor.getMetricsAgent();
+
+            if (responseCode != 200) {
+                wupMetricsAgent.incrementEgressMessageFailureCount();
+                plantMetricsAgent.incrementEgressMessageFailureCount();
+            } else {
+                wupMetricsAgent.incrementEgressMessageSuccessCount();
+                plantMetricsAgent.incrementEgressMessageSuccessCount();
+            }
+        } catch(Exception ex){
+            getLogger().warn(".processResponse(): Problem using Metrics Services, errorMessage->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
 
         getLogger().info(".processResponse(): Exit, response->{}", response);
         return(response);
