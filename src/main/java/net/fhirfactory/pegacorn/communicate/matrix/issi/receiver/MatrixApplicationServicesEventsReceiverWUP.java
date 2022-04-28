@@ -32,12 +32,17 @@ import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPServe
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPServerTopologyEndpoint;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
+import net.fhirfactory.pegacorn.util.PegacornProperties;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractIngresMessagingGatewayWUP;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.component.ComponentsBuilderFactory;
 import org.apache.camel.model.OnExceptionDefinition;
+import org.apache.camel.support.jsse.KeyManagersParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
@@ -132,6 +137,7 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
             kmp.setKeyPassword(getKeyStorePassword());
             SSLContextParameters scp = new SSLContextParameters();
             scp.setKeyManagers(kmp);
+
             ComponentsBuilderFactory.nettyHttp()
                 .ssl(true)
                 .sslContextParameters(scp)
@@ -163,7 +169,6 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         }
         getLogger().debug(".getKeyStoreInstancePassword(): Exit,  KEY_PASSWORD->{}", password);
         return(password);
-
     }
 
     private String getKeyStorePassword() {
@@ -174,7 +179,6 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         }
         getLogger().debug(".getKeyStorePassword(): Exit,  TRUSTSTORE_PASSWORD->{}", password);
         return(password);
-
     }
 
     private OnExceptionDefinition routeMatrixEventNotFoundException() {
