@@ -122,6 +122,9 @@ public class MatrixEventPreparationBean {
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
         camelExchange.getIn().setHeader("Authorization", "Bearer " + getMatrixAccessToken().getRemoteAccessToken());
 
+        //
+        // Now some metrics
+
         try {
             WorkUnitProcessorMetricsAgent wupMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
             wupMetricsAgent.incrementEgressMessageAttemptCount();

@@ -81,6 +81,8 @@ public class SynapseQueryProcessingBean {
         camelExchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
         camelExchange.getIn().setHeader("Authorization", "Bearer " + getSynapseAccessToken().getSessionAccessToken());
 
+        //
+        // Now some metrics
         try {
             WorkUnitProcessorMetricsAgent wupMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
             wupMetricsAgent.incrementEgressMessageAttemptCount();

@@ -64,6 +64,8 @@ public class MatrixEventResponseProcessingBean {
         getLogger().info(".processResponse(): Entry, responseCode->{}", responseCode);
         response.setResponseCode(responseCode);
 
+        //
+        // Now some metrics
         try {
             WorkUnitProcessorMetricsAgent wupMetricsAgent = camelExchange.getProperty(PetasosPropertyConstants.WUP_METRICS_AGENT_EXCHANGE_PROPERTY, WorkUnitProcessorMetricsAgent.class);
             ProcessingPlantMetricsAgent plantMetricsAgent = plantMetricsAgentAccessor.getMetricsAgent();

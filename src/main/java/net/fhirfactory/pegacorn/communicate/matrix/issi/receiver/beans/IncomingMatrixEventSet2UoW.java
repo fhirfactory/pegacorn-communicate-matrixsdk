@@ -62,10 +62,15 @@ public class IncomingMatrixEventSet2UoW
     @Inject
     private ProcessingPlantMetricsAgentAccessor plantMetricsAgentAccessor;
 
+    @Inject
+    private ProcessingPlantMetricsAgentAccessor plantMetricsAgentAccessor;
+
     public UoW encapsulateMatrixMessage(String matrixMessage, Exchange camelExchange)
     {
         LOG.debug(".encapsulateMatrixMessage(): Entry, Matrix Message --> {}", matrixMessage);
+
         WorkUnitProcessorSoftwareComponent wupTopologyNode = camelExchange.getProperty(PetasosPropertyConstants.WUP_TOPOLOGY_NODE_EXCHANGE_PROPERTY_NAME, WorkUnitProcessorSoftwareComponent.class);
+
         LOG.trace(".encapsulateMatrixMessage(): Creating new Payload element, first the Payload TopicToken");
         DataParcelTypeDescriptor payloadTopic = new DataParcelTypeDescriptor();
         payloadTopic.setDataParcelDefiner("Matrix");
@@ -79,6 +84,7 @@ public class IncomingMatrixEventSet2UoW
         manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_FALSE);
         manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_INBOUND_DATA_PARCEL);
         manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+
         LOG.trace(".encapsulateMatrixMessage(): Creating new Payload element, now the Payload itself");
         UoWPayload contentPayload = new UoWPayload();
         contentPayload.setPayloadManifest(manifest);
