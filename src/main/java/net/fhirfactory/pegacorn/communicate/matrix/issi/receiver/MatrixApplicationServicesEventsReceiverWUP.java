@@ -68,7 +68,19 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         getLogger().info("{}:: ingresFeed() --> {}", getClass().getSimpleName(), ingresFeed());
         getLogger().info("{}:: egressFeed() --> {}", getClass().getSimpleName(), egressFeed());
 
+        KeyStoreParameters ksp = new KeyStoreParameters();
+            ksp.setResource("/var/lib/pegacorn-keystores/keystore.jks");
+            ksp.setPassword(getKeyStoreInstancePassword());
+            KeyManagersParameters kmp = new KeyManagersParameters();
+            kmp.setKeyStore(ksp);
+            kmp.setKeyPassword(getKeyStoreInstancePassword());
+            SSLContextParameters scp = new SSLContextParameters();
+            scp.setKeyManagers(kmp);
 
+            ComponentsBuilderFactory.nettyHttp()
+                .ssl(true)
+                .sslContextParameters(scp)
+                .register(getContext(), "netty-http");
 
         //
         // Exceptions
@@ -129,20 +141,7 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
         }
         String httpType = null;
         if(httpServerAdapter.isEncrypted()){
-            KeyStoreParameters ksp = new KeyStoreParameters();
-            ksp.setResource("/var/lib/pegacorn-keystores/keystore.jks");
-            ksp.setPassword(getKeyStoreInstancePassword());
-            KeyManagersParameters kmp = new KeyManagersParameters();
-            kmp.setKeyStore(ksp);
-            kmp.setKeyPassword(getKeyStorePassword());
-            SSLContextParameters scp = new SSLContextParameters();
-            scp.setKeyManagers(kmp);
-
-            ComponentsBuilderFactory.nettyHttp()
-                .ssl(true)
-                .sslContextParameters(scp)
-                .register(getContext(), "netty-http");
-
+            
             httpType = "https";
         } else {
             httpType = "http";
@@ -168,16 +167,6 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
             return(null);
         }
         getLogger().debug(".getKeyStoreInstancePassword(): Exit,  KEY_PASSWORD->{}", password);
-        return(password);
-    }
-
-    private String getKeyStorePassword() {
-        String password = pegacornProperties.getProperty("TRUSTSTORE_PASSWORD", "unknown");
-        if (password.contentEquals("unknown")) {
-            getLogger().error(".getKeyStorePassword(): Unable to resolve Parameter TRUSTSTORE_PASSWORD");
-            return(null);
-        }
-        getLogger().debug(".getKeyStorePassword(): Exit,  TRUSTSTORE_PASSWORD->{}", password);
         return(password);
     }
 
