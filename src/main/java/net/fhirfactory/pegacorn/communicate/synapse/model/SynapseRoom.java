@@ -23,9 +23,13 @@ package net.fhirfactory.pegacorn.communicate.synapse.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SynapseRoom {
+import java.io.Serializable;
+
+public class SynapseRoom implements Serializable {
     private String roomID;
     private String name;
+    private String avatar;
+    private String topic;
     private String canonicalAlias;
     private int joinedMembers;
     private int joinedLocalMembers;
@@ -38,6 +42,103 @@ public class SynapseRoom {
     private String guestAccess;
     private String historyVisibility;
     private int stateEventsCount;
+    private int joinedLocalDevices;
+
+    //
+    // Constructor(s)
+    //
+
+    public SynapseRoom(){
+        this.roomID = null;
+        this.name = null;
+        this.avatar = null;
+        this.topic = null;
+        this.canonicalAlias = null;
+        this.joinedMembers = 0;
+        this.joinedLocalMembers = 0;
+        this.joinedLocalDevices = 0;
+        this.version = null;
+        this.creator = null;
+        this.encryption = null;
+        this.federatable = false;
+        this.publicRoom = false;
+        this.joinRules = null;
+        this.guestAccess = null;
+        this.historyVisibility = null;
+        this.stateEventsCount = 0;
+    }
+
+    public SynapseRoom(SynapseRoom ori){
+        this.roomID = null;
+        this.name = null;
+        this.avatar = null;
+        this.topic = null;
+        this.canonicalAlias = null;
+        this.joinedMembers = 0;
+        this.joinedLocalMembers = 0;
+        this.joinedLocalDevices = 0;
+        this.version = null;
+        this.creator = null;
+        this.encryption = null;
+        this.federatable = false;
+        this.publicRoom = false;
+        this.joinRules = null;
+        this.guestAccess = null;
+        this.historyVisibility = null;
+        this.stateEventsCount = 0;
+
+
+        setRoomID(ori.getRoomID());
+        setName(ori.getName());
+        setAvatar(ori.getAvatar());
+        setTopic(ori.getTopic());
+        setCanonicalAlias(ori.getCanonicalAlias());
+        setJoinedMembers(ori.getJoinedMembers());
+        setJoinedLocalMembers(ori.getJoinedLocalMembers());
+        setJoinedLocalDevices(ori.getJoinedLocalDevices());
+        setVersion(ori.getVersion());
+        setCreator(ori.getCreator());
+        setFederatable(ori.isFederatable());
+        setPublicRoom(ori.isPublicRoom());
+        setJoinRules(ori.getJoinRules());
+        setGuestAccess(ori.getGuestAccess());
+        setHistoryVisibility(ori.getHistoryVisibility());
+        setStateEventsCount(ori.getStateEventsCount());
+    }
+
+    //
+    // Getters and Setters
+    //
+
+    @JsonProperty("joined_local_devices")
+    public int getJoinedLocalDevices() {
+        return joinedLocalDevices;
+    }
+
+    @JsonProperty("joined_local_devices")
+    public void setJoinedLocalDevices(int joinedLocalDevices) {
+        this.joinedLocalDevices = joinedLocalDevices;
+    }
+
+    @JsonProperty("topic")
+    public String getTopic() {
+        return topic;
+    }
+
+    @JsonProperty("topic")
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    @JsonProperty("avatar")
+    public String getAvatar() {
+        return avatar;
+    }
+
+    @JsonProperty("avatar")
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     @JsonProperty("room_id")
     public String getRoomID() {
@@ -196,6 +297,7 @@ public class SynapseRoom {
                 ", guestAccess='" + guestAccess + '\'' +
                 ", historyVisibility='" + historyVisibility + '\'' +
                 ", stateEventsCount=" + stateEventsCount +
+                ", avatar=" + avatar +
                 '}';
     }
 }

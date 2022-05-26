@@ -34,6 +34,7 @@ public class SynapseUser {
     private boolean shadowBanned;
     private String displayName;
     private String avatarURL;
+    private Long creationTimestamp;
 
     public SynapseUser(){
         this.name = null;
@@ -44,6 +45,7 @@ public class SynapseUser {
         this.shadowBanned = false;
         this.displayName = null;
         this.avatarURL = null;
+        this.creationTimestamp = null;
     }
 
     public SynapseUser(SynapseUser synapseUser){
@@ -135,6 +137,16 @@ public class SynapseUser {
     @JsonProperty("avatar_url")
     public void setAvatarURL(String avatarURL) {
         this.avatarURL = avatarURL;
+    }
+
+    @JsonProperty("creation_ts")
+    public Long getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    @JsonProperty("creation_ts")
+    public void setCreationTimestamp(Long creationTimestamp) {
+        this.creationTimestamp = creationTimestamp;
     }
 
     @Override
