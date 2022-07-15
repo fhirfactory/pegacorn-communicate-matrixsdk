@@ -49,6 +49,7 @@ public class MatrixEventPreparationBean {
 
     private static String MATRIX_API_SUBPATH="/_matrix/client/r0";
     private static String SYNAPSE_API_V1_SUBPATH="_synapse/admin/v1/";
+    private static Integer MAXIMUM_MESSAGE_LENGTH = 32000;
 
     @Inject
     private MatrixAccessToken matrixAccessToken;
@@ -99,6 +100,14 @@ public class MatrixEventPreparationBean {
                 method = HttpMethod.PUT;
                 if(matrixEvent instanceof MRoomTextMessageEvent) {
                     MRoomTextMessageEvent textMessageEvent = SerializationUtils.clone((MRoomTextMessageEvent) matrixEvent);
+                    if(textMessageEvent.getContent() != null){
+                        if(StringUtils.isNotEmpty(textMessageEvent.getContent().getBody())){
+                            if(textMessageEvent.getContent().getBody().length() > MAXIMUM_MESSAGE_LENGTH ) {
+                                String concatenatedMessageContent = textMessageEvent.getContent().getBody().substring(0, MAXIMUM_MESSAGE_LENGTH - 1) + "}";
+                                textMessageEvent.getContent().setBody(concatenatedMessageContent);
+                            }
+                        }
+                    }
                     textMessageEvent.setSender(null);
                     textMessageEvent.setEventIdentifier(null);
                     textMessageEvent.setRoomIdentifier(null);
