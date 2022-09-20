@@ -27,14 +27,14 @@ import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingM
 import net.fhirfactory.pegacorn.communicate.matrix.issi.receiver.beans.IncomingMatrixMessageSplitter;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixEventNotFoundException;
 import net.fhirfactory.pegacorn.communicate.matrix.model.exceptions.MatrixUpdateException;
-import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.dricats.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.adapters.HTTPServerAdapter;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.http.HTTPServerTopologyEndpoint;
-import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpointContainer;
+import net.fhirfactory.pegacorn.petasos.participant.wup.MessageBasedWUPEndpointContainer;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.util.PegacornProperties;
-import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
-import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractIngresMessagingGatewayWUP;
+import net.fhirfactory.dricats.petasos.participant.workshops.InteractWorkshop;
+import net.fhirfactory.dricats.petasos.participant.wup.messagebased.InteractIngresMessagingGatewayWUP;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
@@ -118,7 +118,7 @@ public abstract class MatrixApplicationServicesEventsReceiverWUP extends Interac
 
 
     @Override
-    protected MessageBasedWUPEndpointContainer specifyIngresEndpoint() {
+    protected MessageBasedWUPEndpointContainer establishIngresEndpoint() {
         getLogger().debug(".specifyIngresTopologyEndpoint(): Entry");
         MessageBasedWUPEndpointContainer ingresEndpoint = new MessageBasedWUPEndpointContainer();
         ingresEndpoint.setFrameworkEnabled(false);

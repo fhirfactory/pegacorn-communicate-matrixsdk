@@ -21,7 +21,7 @@
  */
 package net.fhirfactory.pegacorn.communicate.matrix.issi.endpointcontainer;
 
-import net.fhirfactory.pegacorn.petasos.core.moa.wup.APIClientWUPEndpointContainer;
+import net.fhirfactory.pegacorn.petasos.participant.wup.APIClientWUPEndpointContainer;
 
 public class MatrixAPIClientEndpointContainer extends APIClientWUPEndpointContainer {
 

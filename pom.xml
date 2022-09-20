@@ -21,7 +21,7 @@
     <artifactId>dricats-communicate-matrixsdk</artifactId>
     <packaging>jar</packaging>
         
-    <name>DRICATS :: Communicate :: Matrix API (Application Services Client)</name>
+    <name>DRICaTS :: Communicate :: Matrix API (Application Services Client)</name>
 
     <url>http://pegacorn.fhirfactory.net</url>
 
@@ -196,7 +196,7 @@
         </dependency>
 
         <!--*******************************************************************************-->
-        <!-- Pegacorn (Platform) Libraries                                                 -->
+        <!-- DRICaTS (Platform) Libraries                                                 -->
         <!--*******************************************************************************-->
 
         <dependency>
@@ -208,180 +208,68 @@
         </dependency>
 
         <!--*******************************************************************************-->
-        <!-- Pegacorn (Deployment) Libraries                                               -->
+        <!-- DRICaTS (Deployment) Libraries                                               -->
         <!--*******************************************************************************-->
 
         <dependency>
             <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-deployment-properties</artifactId>
+            <artifactId>dricats-deployment-configuration</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-deployment-constants</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
+        <!--*******************************************************************************-->
+        <!-- DRICaTS (Petasos) Libraries                                                  -->
+        <!--*******************************************************************************-->
 
         <dependency>
             <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-deployment-datasets</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-deployment-topology</artifactId>
+            <artifactId>dricats-petasos-framework</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
 
         <!--*******************************************************************************-->
-        <!-- Pegacorn (Petasos) Libraries                                                  -->
+        <!-- DRICaTS (FHIR) Libraries                                                     -->
         <!--*******************************************************************************-->
 
         <dependency>
             <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-petasos-core</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-petasos-audit</artifactId>
+            <artifactId>dricats-datamodels-fhir</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
 
         <!--*******************************************************************************-->
-        <!-- Pegacorn (FHIR) Libraries                                                     -->
+        <!-- Pegaco Libraries                                           -->
         <!--*******************************************************************************-->
 
         <dependency>
             <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-datamodels-fhir</artifactId>
+            <artifactId>dricats-datamodels-petasos</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-datamodels-common</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-datamodels-configuration</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
 
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (BuildingBlocks) Libraries                                           -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-datamodels-core</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (BuildingBlock) Edge Libraries                                       -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-edge-restful</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-edge-messaging</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-edge-model</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (BuildingBlock) Endpoints Libraries                                  -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-endpoints</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (BuildingBlock) Archetypes                                           -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-processingplant</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-workshop</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-workunitprocessors</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (BuildingBlock) Data Models                                          -->
-        <!--*******************************************************************************-->
-        <!--
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-datamodels-synapse</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-datamodels-esr</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        -->
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (BuildingBlock) Directory Microservices                              -->
-        <!--*******************************************************************************-->
-        <!--
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-directoryservices</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        -->
         <!--*******************************************************************************-->
         <!-- JGroups Manipulation Libraries                                                -->
         <!--*******************************************************************************-->

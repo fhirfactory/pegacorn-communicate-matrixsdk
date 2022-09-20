@@ -23,10 +23,10 @@ package net.fhirfactory.pegacorn.communicate.synapse.issi.beans;
 
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.common.SynapseAPIResponse;
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgent;
-import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.ProcessingPlantMetricsAgentAccessor;
-import net.fhirfactory.pegacorn.petasos.oam.metrics.agents.WorkUnitProcessorMetricsAgent;
+import net.fhirfactory.dricats.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.petasos.tasking.observations.metrics.agents.ProcessingPlantMetricsAgent;
+import net.fhirfactory.pegacorn.petasos.tasking.observations.metrics.agents.ProcessingPlantMetricsAgentAccessor;
+import net.fhirfactory.pegacorn.petasos.tasking.observations.metrics.agents.WorkUnitProcessorMetricsAgent;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;

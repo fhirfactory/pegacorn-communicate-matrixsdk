@@ -23,7 +23,7 @@ package net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.messa
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.fhirfactory.pegacorn.communicate.matrix.model.constants.MatrixClientServiceAPIConstants;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelTypeDescriptor;
+import net.fhirfactory.dricats.model.petasos.dataparcel.DataParcelTypeDescriptor;
 
 public enum MRoomMessageTypeEnum {
     VIDEO("m.video"),

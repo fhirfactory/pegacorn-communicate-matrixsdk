@@ -23,11 +23,11 @@ package net.fhirfactory.pegacorn.communicate.matrix.cache;
 
 
 import net.fhirfactory.pegacorn.core.model.componentid.PegacornSystemComponentTypeTypeEnum;
-import net.fhirfactory.pegacorn.workshops.base.Workshop;
+import net.fhirfactory.dricats.petasos.participant.workshops.base.UnmonitoredWorkshop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MatrixServerCacheWorkshop extends Workshop {
+public class MatrixServerCacheWorkshop extends UnmonitoredWorkshop {
     private static final Logger LOG = LoggerFactory.getLogger(MatrixServerCacheWorkshop.class);
     private static String WORKSHOP_NAME = "MatrixServerCache";
     private static String WORKSHOP_VERSION = "1.0.0";
@@ -48,8 +48,8 @@ public class MatrixServerCacheWorkshop extends Workshop {
     }
 
     @Override
-    protected PegacornSystemComponentTypeTypeEnum specifyWorkshopType() {
-        return (PegacornSystemComponentTypeTypeEnum.WORKSHOP);
+    protected DricatsSoftwareComponentTypeEnum specifyWorkshopType() {
+        return (DricatsSoftwareComponentTypeEnum.WORKSHOP);
     }
 
     @Override
