@@ -28,12 +28,14 @@ import java.io.Serializable;
 public class SynapseRoom implements Serializable {
     private String roomID;
     private String name;
+    private String roomType;
     private String avatar;
     private String topic;
     private String canonicalAlias;
     private int joinedMembers;
     private int joinedLocalMembers;
     private String version;
+    private String forgotten;
     private String creator;
     private String encryption;
     private boolean federatable;
@@ -66,6 +68,8 @@ public class SynapseRoom implements Serializable {
         this.guestAccess = null;
         this.historyVisibility = null;
         this.stateEventsCount = 0;
+        this.roomType = null;
+        this.forgotten = null;
     }
 
     public SynapseRoom(SynapseRoom ori){
@@ -86,6 +90,8 @@ public class SynapseRoom implements Serializable {
         this.guestAccess = null;
         this.historyVisibility = null;
         this.stateEventsCount = 0;
+        this.roomType = null;
+        this.forgotten = null;
 
 
         setRoomID(ori.getRoomID());
@@ -104,11 +110,33 @@ public class SynapseRoom implements Serializable {
         setGuestAccess(ori.getGuestAccess());
         setHistoryVisibility(ori.getHistoryVisibility());
         setStateEventsCount(ori.getStateEventsCount());
+        setRoomType(ori.getRoomType());
+        setForgotten(ori.getForgotten());
     }
 
     //
     // Getters and Setters
     //
+
+    @JsonProperty("forgotten")
+    public String getForgotten() {
+        return forgotten;
+    }
+
+    @JsonProperty("forgotten")
+    public void setForgotten(String forgotten) {
+        this.forgotten = forgotten;
+    }
+
+    @JsonProperty("room_type")
+    public String getRoomType() {
+        return roomType;
+    }
+
+    @JsonProperty("room_type")
+    public void setRoomType(String roomType) {
+        this.roomType = roomType;
+    }
 
     @JsonProperty("joined_local_devices")
     public int getJoinedLocalDevices() {
@@ -298,6 +326,7 @@ public class SynapseRoom implements Serializable {
                 ", historyVisibility='" + historyVisibility + '\'' +
                 ", stateEventsCount=" + stateEventsCount +
                 ", avatar=" + avatar +
+                ", roomType=" + roomType +
                 '}';
     }
 }
