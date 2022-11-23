@@ -28,8 +28,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.common.MatrixEventBase;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.common.contenttypes.MEventTypeEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
-import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
+import net.fhirfactory.pegacorn.petasos.oam.metrics.cache.common.ITOpsReplicaLocalServerName;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import java.util.Locale;
 
 @Dependent
 public class MatrixEventPreparationBean {
